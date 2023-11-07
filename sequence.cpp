@@ -8,7 +8,9 @@ using namespace std;
 /// SEQUENCE ///
 
 template class Sequence<unsigned int, string>; // should be fixed
-template ostream& operator<<(ostream& os, const Sequence<unsigned int, std::string>& sequence);
+template ostream& operator<<(ostream& os, const Sequence<unsigned int, string>& sequence);
+template
+void split_pos(const Sequence<unsigned int, string>& seq, int start_pos, int len1, int len2, int count, Sequence<unsigned int, string>& seq1, Sequence<unsigned int, string>& seq2);
 
 // core methods
 template <typename Key, typename Info>
@@ -353,11 +355,14 @@ void split_pos(const Sequence<Key, Info>& seq, int start_pos, int len1, int len2
   seq1.clear();
   seq2.clear();
 
+  Sequence<Key, Info> temp; // Temporary sequence to store the remaining elements.
   typename Sequence<Key, Info>::Iterator it = seq.begin();
 
   // Move the iterator to the start position.
   // Stop if iterator reached the end of the original sequence.
-  for (int i = 0; i < start_pos && it != seq.end(); ++i, ++it);
+  for (int i = 0; i < start_pos && it != seq.end(); ++i, ++it) {
+    temp.push_back(it.key(), it.info());
+  }
 
   // Perform the splitting `count` times. Stop if iterator reached the end of the original sequence.
   while (count > 0 && it != seq.end()) {
@@ -373,4 +378,13 @@ void split_pos(const Sequence<Key, Info>& seq, int start_pos, int len1, int len2
 
     count--;
   }
+
+  while (it != seq.end()) {
+    temp.push_back(it.key(), it.info());
+    ++it;
+  }
+
+  Sequence<Key, Info>& modifiable_seq = const_cast<Sequence<Key, Info>&>(seq);
+  modifiable_seq.clear();
+  modifiable_seq = temp;
 }

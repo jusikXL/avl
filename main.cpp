@@ -5,6 +5,96 @@
 #include <iostream>
 using namespace std;
 
+void test_split_pos_1() {
+  Sequence<unsigned int, string> seq;
+  Sequence<unsigned int, string> seq1;
+  Sequence<unsigned int, string> seq2;
+
+  for (int i = 0; i < 25; ++i) {
+    seq.push_back(i, "");
+  }
+
+  split_pos(seq, 2, 2, 3, 4, seq1, seq2);
+
+  Sequence<unsigned int, string> expected_seq;
+  Sequence<unsigned int, string> expected_seq1;
+  Sequence<unsigned int, string> expected_seq2;
+
+  expected_seq.push_back(0, "");
+  expected_seq.push_back(1, "");
+  for (int i = 22; i < 25; ++i) {
+    expected_seq.push_back(i, "");
+  }
+
+  for (int i = 2; i <= 18; i += 5) {
+    expected_seq1.push_back(i, "");
+    expected_seq1.push_back(i + 1, "");
+  }
+
+  for (int i = 4; i < 22; i += 5) {
+    expected_seq2.push_back(i, "");
+    expected_seq2.push_back(i + 1, "");
+    expected_seq2.push_back(i + 2, "");
+  }
+
+  // Assertions to verify the test
+  cout << "Seq: " << seq << endl;
+  cout << "Exp Seq: " << expected_seq << endl;
+
+  cout << "Seq1: " << seq1 << endl;
+  cout << "Exp Seq1: " << expected_seq1 << endl;
+
+  cout << "Seq2: " << seq2 << endl;
+  cout << "Exp Seq2: " << expected_seq2 << endl;
+
+  cout << "split_pos_1 end" << endl;
+}
+
+void test_split_pos_2() {
+  Sequence<unsigned int, string> seq;
+  Sequence<unsigned int, string> seq1;
+  Sequence<unsigned int, string> seq2;
+
+  for (int i = 0; i <= 10; ++i) {
+    seq.push_back(i, "");
+  }
+
+  int start_pos = 2;
+  int len1 = 2;
+  int len2 = 3;
+  int count = 4;
+
+  Sequence<unsigned int, string> expected_seq;
+  expected_seq.push_back(0, "");
+  expected_seq.push_back(1, "");
+
+  Sequence<unsigned int, string> expected_seq1;
+  expected_seq1.push_back(2, "");
+  expected_seq1.push_back(3, "");
+  expected_seq1.push_back(7, "");
+  expected_seq1.push_back(8, "");
+
+  Sequence<unsigned int, string> expected_seq2;
+  expected_seq2.push_back(4, "");
+  expected_seq2.push_back(5, "");
+  expected_seq2.push_back(6, "");
+  expected_seq2.push_back(9, "");
+  expected_seq2.push_back(10, "");
+
+  split_pos(seq, start_pos, len1, len2, count, seq1, seq2);
+
+  cout << "Seq: " << seq << endl;
+  cout << "Exp Seq: " << expected_seq << endl;
+
+  cout << "Seq1: " << seq1 << endl;
+  cout << "Exp Seq1: " << expected_seq1 << endl;
+
+  cout << "Seq2: " << seq2 << endl;
+  cout << "Exp Seq2: " << expected_seq2 << endl;
+
+  cout << "split_pos_2 end" << endl;
+}
+
 // Test for print
 void test_print() {
   Sequence<unsigned int, string> sequence;
@@ -443,6 +533,9 @@ int main() {
   test_iterator();
 
   test_print();
+
+  test_split_pos_1();
+  test_split_pos_2();
 
   return 0;
 }

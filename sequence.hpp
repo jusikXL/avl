@@ -13,6 +13,9 @@ template <typename Key, typename Info>
 ostream& operator<<(ostream& os, const Sequence<Key, Info>& sequence);
 
 template <typename Key, typename Info>
+void split_pos(const Sequence<Key, Info>& seq, int start_pos, int len1, int len2, int count, Sequence<Key, Info>& seq1, Sequence<Key, Info>& seq2);
+
+template <typename Key, typename Info>
 class Sequence {
 private:
   class Node {
@@ -47,6 +50,8 @@ public:
   unsigned int length() const;
   bool is_empty() const;
   friend ostream& operator<< <>(ostream& os, const Sequence<Key, Info>& sequence);
+
+  friend void split_pos <>(const Sequence<Key, Info>& seq, int start_pos, int len1, int len2, int count, Sequence<Key, Info>& seq1, Sequence<Key, Info>& seq2);
 
   /**
    * Inserts a new element with the provided key and info after the specified target element
@@ -125,10 +130,5 @@ public:
   Iterator begin() const;
   Iterator end() const;
 };
-
-
-
-template <typename Key, typename Info>
-void split_pos(const Sequence<Key, Info>& seq, int start_pos, int len1, int len2, int count, Sequence<Key, Info>& seq1, Sequence<Key, Info>& seq2);
 
 #endif // SEQUENCE_HPP
