@@ -22,6 +22,9 @@ private:
   Node *_tail;
   unsigned int _size;
 
+  Node *_get_node(const Key &key, unsigned int occurrence) const;
+  Node *_get_node_before(const Key &key, unsigned int occurrence) const;
+
 public:
   Sequence();
   ~Sequence();
@@ -29,7 +32,7 @@ public:
   Sequence &operator=(const Sequence &src);
 
   unsigned int length() const;
-  bool isEmpty() const;
+  bool is_empty() const;
   // friend std::ostream &operator<<(std::ostream &os, const Sequence<Key, Info> &sequence);
 
   /**
@@ -74,12 +77,11 @@ public:
   /**
    * Searches for the specified element of a given key and occurence.
    *
-   * @param[out] foundNode Reference to a pointer to Node to be able to modify it later.
    * @param key The key to search for.
    * @param occurrence Specifies which occurrence of the key to consider. Defaults to 1.
    * @return true if the specified element is found, false otherwise.
    */
-  bool search(Node *&foundNode, const Key &key, unsigned int occurrence = 1) const;
+  bool search(const Key &key, unsigned int occurrence) const;
 
   /**
    * Counts the number of occurences of the given key.
