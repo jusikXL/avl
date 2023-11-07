@@ -1,10 +1,20 @@
 #include "sequence.hpp"
-#include <string>
 
+#include <string>
 #include <cassert>
 #include <iostream>
-
 using namespace std;
+
+// Test for print
+void test_print() {
+  Sequence<unsigned int, string> sequence;
+
+  sequence.push_back(1, "One");
+  sequence.push_back(2, "Two");
+  sequence.push_back(3, "Three");
+
+  cout << "The sequence contains: " << sequence << endl;
+}
 
 // Test for pop_front method
 void test_pop_front() {
@@ -431,6 +441,8 @@ int main() {
   removal_tests();
 
   test_iterator();
+
+  test_print();
 
   return 0;
 }

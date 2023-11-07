@@ -1,13 +1,14 @@
 #include "sequence.hpp"
+
 #include <string>
-
 #include <cassert>
-
+#include <iostream>
 using namespace std;
 
 /// SEQUENCE ///
 
 template class Sequence<unsigned int, string>; // should be fixed
+template ostream& operator<<(ostream& os, const Sequence<unsigned int, std::string>& sequence);
 
 // core methods
 template <typename Key, typename Info>
@@ -328,4 +329,48 @@ template <typename Key, typename Info>
 Info& Sequence<Key, Info>::Iterator::info() const {
   assert(_current != nullptr && "Attempting to access info of a null iterator.");
   return _current->info;
+}
+
+template <typename Key, typename Info>
+ostream& operator<<(ostream& os, const Sequence<Key, Info>& sequence) {
+  typename Sequence<Key, Info>::Iterator it = sequence.begin();
+
+  os << "[";
+  while (it != sequence.end()) {
+    os << "(" << it.key() << ", " << it.info() << ")";
+    ++it;
+    if (it != sequence.end()) {
+      os << ", ";
+    }
+  }
+  os << "]";
+
+  return os;
+}
+
+template <typename Key, typename Info>
+void split_pos(const Sequence<Key, Info>& seq, int start_pos, int len1, int len2, int count, Sequence<Key, Info>& seq1, Sequence<Key, Info>& seq2) {
+  seq1.clear();
+  seq2.clear();
+
+  typename Sequence<Key, Info>::Iterator it = seq.begin();
+
+  // Move the iterator to the start position.
+  // Stop if iterator reached the end of the original sequence.
+  for (int i = 0; i < start_pos && it != seq.end(); ++i, ++it);
+
+  // Perform the splitting `count` times. Stop if iterator reached the end of the original sequence.
+  while (count > 0 && it != seq.end()) {
+    // Move `len1` elements to seq1. Stop if iterator reached the end of the original sequence.
+    for (int i = 0; i < len1 && it != seq.end(); ++i, ++it) {
+      seq1.push_back(it.key(), it.info());
+    }
+
+    // Move `len2` elements to seq2. Stop if iterator reached the end of the original sequence.
+    for (int i = 0; i < len2 && it != seq.end(); ++i, ++it) {
+      seq2.push_back(it.key(), it.info());
+    }
+
+    count--;
+  }
 }
