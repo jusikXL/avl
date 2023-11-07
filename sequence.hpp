@@ -2,34 +2,36 @@
 #define SEQUENCE_HPP
 
 template <typename Key, typename Info>
-class Sequence
-{
+class Sequence {
 private:
-  class Node
-  {
+  class Node {
     friend class Sequence;
 
   public:
     Key key;
     Info info;
-    Node(const Key &k, const Info &i, Node *n = nullptr);
+    Node(const Key& k, const Info& i, Node* n = nullptr);
 
   private:
-    Node *_next;
+    Node* _next;
   };
 
-  Node *_head;
-  Node *_tail;
+  Node* _head;
+  Node* _tail;
   unsigned int _size;
 
-  Node *_get_node(const Key &key, unsigned int occurrence) const;
-  Node *_get_node_before(const Key &key, unsigned int occurrence) const;
+  /**
+   * Private method to get the node of a given key and occurence
+   * cannot be replaced with iterators because they are safe (have no access to next)
+   */
+  Node* _get_node(const Key& target_key, unsigned int target_occurrence = 1) const;
+  Node* _get_node_before(const Key& target_key, unsigned int target_occurrence = 1) const;
 
 public:
   Sequence();
   ~Sequence();
-  Sequence(const Sequence &src);
-  Sequence &operator=(const Sequence &src);
+  Sequence(const Sequence& src);
+  Sequence& operator=(const Sequence& src);
 
   unsigned int length() const;
   bool is_empty() const;
@@ -42,21 +44,21 @@ public:
    * @param key The key of the new element to insert.
    * @param info The info of the new element to insert.
    * @param target_key The key after which the new element should be inserted.
-   * @param occurrence Specifies after which occurrence of `target_key` to insert.
+   * @param target_occurrence Specifies after which occurrence of `target_key` to insert.
    * @return true if the element was successfully inserted, false otherwise.
    */
-  bool insert_after(const Key &key, const Info &info, const Key &target_key, unsigned int occurrence = 1);
-  void push_front(const Key &key, const Info &info);
-  void push_back(const Key &key, const Info &info);
+  bool insert_after(const Key& key, const Info& info, const Key& target_key, unsigned int target_occurrence = 1);
+  void push_front(const Key& key, const Info& info);
+  void push_back(const Key& key, const Info& info);
 
   /**
    * Removes the specified element of a given key and occurence.
    *
-   * @param key The key of the element to remove.
-   * @param occurrence Specifies which occurrence of the key to consider. Defaults to 1.
+   * @param target_key The key of the element to remove.
+   * @param target_occurrence Specifies which occurrence of the key to consider. Defaults to 1.
    * @return true if an element was successfully removed, false otherwise.
    */
-  bool remove(const Key &key, unsigned int occurrence = 1);
+  bool remove(const Key& target_key, unsigned int target_occurrence = 1);
   bool pop_front();
   bool pop_back();
   void clear();
@@ -66,48 +68,47 @@ public:
    * Retrieves the info associated to a specified element of a given key and occurence.
    *
    * @param[out] info Reference to where the info will be stored.
-   * @param key The key for which to retrieve the associated info.
-   * @param occurrence Specifies which occurrence of the key to consider. Defaults to 1.
+   * @param target_key The key for which to retrieve the associated info.
+   * @param target_occurrence Specifies which occurrence of the key to consider. Defaults to 1.
    * @return true if the element was found and the associated info was retrieved, false otherwise.
    */
-  bool get_info(Info &info, const Key &key, unsigned int occurrence = 1) const;
-  bool front(Info &info, Key &key) const;
-  bool back(Info &info, Key &key) const;
+  bool get_info(Info& info, const Key& target_key, unsigned int target_occurrence = 1) const;
+  bool front(Info& info, Key& key) const;
+  bool back(Info& info, Key& key) const;
 
   /**
    * Searches for the specified element of a given key and occurence.
    *
-   * @param key The key to search for.
-   * @param occurrence Specifies which occurrence of the key to consider. Defaults to 1.
+   * @param target_key The key to search for.
+   * @param target_occurrence Specifies which occurrence of the key to consider. Defaults to 1.
    * @return true if the specified element is found, false otherwise.
    */
-  bool search(const Key &key, unsigned int occurrence) const;
+  bool search(const Key& target_key, unsigned int target_occurrence) const;
 
   /**
    * Counts the number of occurences of the given key.
    */
-  unsigned int search(const Key &key) const;
+  unsigned int search(const Key& target_key) const;
 
-  class Iterator
-  {
+  class Iterator {
   private:
-    Node *_current;
+    Node* _current;
 
   public:
-    Iterator(Node *ptr = nullptr);
+    Iterator(Node* ptr = nullptr);
     ~Iterator();
-    Iterator(const Iterator &src);
-    Iterator &operator=(const Iterator &src);
+    Iterator(const Iterator& src);
+    Iterator& operator=(const Iterator& src);
 
-    bool operator==(const Iterator &src) const;
-    bool operator!=(const Iterator &src) const;
+    bool operator==(const Iterator& src) const;
+    bool operator!=(const Iterator& src) const;
 
-    Iterator &operator++();
+    Iterator& operator++();
     Iterator operator++(int);
     Iterator operator+(unsigned int inverval);
 
-    Key &key() const;
-    Info &info() const;
+    Key& key() const;
+    Info& info() const;
   };
 
   Iterator begin() const;
@@ -115,9 +116,3 @@ public:
 };
 
 #endif // SEQUENCE_HPP
-
-// operator<<
-// sort
-// reverse
-// swap
-// subSequence
