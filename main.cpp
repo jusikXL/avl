@@ -1,4 +1,5 @@
 #include "sequence.hpp"
+#include "split.hpp"
 
 #include <string>
 #include <cassert>
