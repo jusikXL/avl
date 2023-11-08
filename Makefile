@@ -4,7 +4,7 @@ OBJDIR = obj
 test_sequence.out: $(OBJDIR)/main.o
 	g++ $(WFLAGS) -g $(OBJDIR)/main.o -o test_sequence.out
 
-$(OBJDIR)/main.o: main.cpp sequence.hpp
+$(OBJDIR)/main.o: main.cpp sequence.hpp split.hpp
 	g++ $(WFLAGS) -g -c main.cpp -o $(OBJDIR)/main.o
 
 clean:

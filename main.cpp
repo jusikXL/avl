@@ -11,9 +11,25 @@ void test_split_key() {
   Sequence<unsigned int, string> seq1;
   Sequence<unsigned int, string> seq2;
 
-  for (int i = 0; i < 25; ++i) {
+  for (int i = 0; i <= 6; ++i) {
     seq.push_back(i, "");
   }
+  seq.push_back(4, "");
+  seq.push_back(8, "");
+  seq.push_back(9, "");
+  seq.push_back(4, "");
+  seq.push_back(11, "");
+  seq.push_back(12, "");
+  seq.push_back(2, "");
+  seq.push_back(14, "");
+  seq.push_back(15, "");
+  seq.push_back(11, "");
+  seq.push_back(17, "");
+  seq.push_back(23, "");
+  for (int i = 19; i <= 24; ++i) {
+    seq.push_back(i, "");
+  }
+
 
   unsigned int four = 4;
   split_key(seq, four, 2, 3, 2, 2, seq1, seq2);

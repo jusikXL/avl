@@ -13,6 +13,7 @@ void split_pos(const Sequence<Key, Info>& seq, int start_pos, int len1, int len2
   seq1.clear();
   seq2.clear();
 
+
   Sequence<Key, Info> temp; // Temporary sequence to store the remaining elements.
   typename Sequence<Key, Info>::Iterator it = seq.begin();
 
@@ -53,7 +54,10 @@ void split_key(Sequence<Key, Info>& seq, const Key& start_key, int start_occ, in
   seq1.clear();
   seq2.clear();
 
-  if (!seq.search(start_key, start_occ)) return; // Start node not found, exit the function.
+
+  if (!seq.search(start_key, start_occ))
+    return;
+
 
   Sequence<Key, Info> temp;
   typename Sequence<Key, Info>::Iterator it = seq.begin();
