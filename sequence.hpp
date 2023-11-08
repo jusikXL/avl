@@ -16,6 +16,9 @@ template <typename Key, typename Info>
 void split_pos(const Sequence<Key, Info>& seq, int start_pos, int len1, int len2, int count, Sequence<Key, Info>& seq1, Sequence<Key, Info>& seq2);
 
 template <typename Key, typename Info>
+void split_key(Sequence<Key, Info>& seq, const Key& start_key, int start_occ, int len1, int len2, int count, Sequence<Key, Info>& seq1, Sequence<Key, Info>& seq2);
+
+template <typename Key, typename Info>
 class Sequence {
 private:
   class Node {
@@ -52,6 +55,7 @@ public:
   friend ostream& operator<< <>(ostream& os, const Sequence<Key, Info>& sequence);
 
   friend void split_pos <>(const Sequence<Key, Info>& seq, int start_pos, int len1, int len2, int count, Sequence<Key, Info>& seq1, Sequence<Key, Info>& seq2);
+  friend void split_key <>(Sequence<Key, Info>& seq, const Key& start_key, int start_occ, int len1, int len2, int count, Sequence<Key, Info>& seq1, Sequence<Key, Info>& seq2);
 
   /**
    * Inserts a new element with the provided key and info after the specified target element
@@ -60,7 +64,7 @@ public:
    * @param key The key of the new element to insert.
    * @param info The info of the new element to insert.
    * @param target_key The key after which the new element should be inserted.
-   * @param target_occurrence Specifies after which occurrence of `target_key` to insert.
+   * @param target_occurrence Specifies af which occurrence of `target_key` to insert.
    * @return true if the element was successfully inserted, false otherwise.
    */
   bool insert_after(const Key& key, const Info& info, const Key& target_key, unsigned int target_occurrence = 1);

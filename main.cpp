@@ -5,6 +5,57 @@
 #include <iostream>
 using namespace std;
 
+void test_split_key() {
+  Sequence<unsigned int, string> seq;
+  Sequence<unsigned int, string> seq1;
+  Sequence<unsigned int, string> seq2;
+
+  for (int i = 0; i < 25; ++i) {
+    seq.push_back(i, "");
+  }
+
+  unsigned int four = 4;
+  split_key(seq, four, 2, 3, 2, 2, seq1, seq2);
+
+  Sequence<unsigned int, string> expected_seq;
+  Sequence<unsigned int, string> expected_seq1;
+  Sequence<unsigned int, string> expected_seq2;
+
+
+  for (int i = 0; i <= 6; ++i) {
+    expected_seq.push_back(i, "");
+  }
+  expected_seq.push_back(17, "");
+  expected_seq.push_back(23, "");
+  for (int i = 19; i <= 24; ++i) {
+    expected_seq.push_back(i, "");
+  }
+
+  expected_seq1.push_back(4, "");
+  expected_seq1.push_back(8, "");
+  expected_seq1.push_back(9, "");
+  expected_seq1.push_back(12, "");
+  expected_seq1.push_back(2, "");
+  expected_seq1.push_back(14, "");
+
+  expected_seq2.push_back(4, "");
+  expected_seq2.push_back(11, "");
+  expected_seq2.push_back(15, "");
+  expected_seq2.push_back(11, "");
+
+  // Assertions to verify the test
+  cout << "Seq: " << seq << endl;
+  cout << "Exp Seq: " << expected_seq << endl;
+
+  cout << "Seq1: " << seq1 << endl;
+  cout << "Exp Seq1: " << expected_seq1 << endl;
+
+  cout << "Seq2: " << seq2 << endl;
+  cout << "Exp Seq2: " << expected_seq2 << endl;
+
+  cout << "split_key end" << endl;
+}
+
 void test_split_pos_1() {
   Sequence<unsigned int, string> seq;
   Sequence<unsigned int, string> seq1;
@@ -536,6 +587,8 @@ int main() {
 
   test_split_pos_1();
   test_split_pos_2();
+
+  test_split_key();
 
   return 0;
 }
