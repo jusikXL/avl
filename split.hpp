@@ -98,5 +98,41 @@ void split_key(Sequence<Key, Info>& seq, const Key& start_key, int start_occ, in
   modifiable_seq = temp;
 }
 
+template <typename Key, typename Info>
+void insertFirstIntoTheMiddle(const Sequence<Key, Info>& seq1, const Sequence<Key, Info>& seq2, Sequence<Key, Info>& outSeq) {
+    outSeq.clear();
+
+    if (seq2.is_empty()) {
+        outSeq = seq1;
+        return;
+    }
+    // if seq2 is empty we return seq1 as an output
+    // if seq1 is empty as well we will return empty seq1 
+
+    Key firstKey;
+    Info firstInfo;
+    seq2.front(firstInfo, firstKey);
+
+    if (seq1.is_empty()) {
+        outSeq.push_back(firstKey, firstInfo);
+        return;
+    }
+    // if seq1 is empty we push into it only the first element of seq2 (if it is not empty)
+
+
+    unsigned int middlePos = seq1.length() / 2;
+    typename Sequence<Key, Info>::Iterator it = seq1.begin();
+
+    for (unsigned int pos = 0; it != seq1.end(); ++it, ++pos) {
+        if (pos == middlePos) {
+            outSeq.push_back(firstKey, firstInfo);
+        }
+        outSeq.push_back(it.key(), it.info());
+    }
+}
+
+
+
+
 
 #endif // SPLIT_HPP

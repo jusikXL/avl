@@ -6,6 +6,27 @@
 #include <iostream>
 using namespace std;
 
+void test_insert_first_into_middle() {
+  Sequence<unsigned int, string> seq2;
+  Sequence<unsigned int, string> seq1;
+   Sequence<unsigned int, string> seq3;
+
+  for (int i = 1; i <= 5; ++i) {
+    seq1.push_back(i, "");
+  }
+
+  for (int i = 1; i <= 3; ++i) {
+    seq2.push_back(i, "");
+  }
+
+  insertFirstIntoTheMiddle(seq1,seq2,seq3);
+
+  cout << "Seq1: " << seq1 << endl;
+  cout << "Seq2: " << seq2 << endl;
+  cout << "Seq3: " << seq3 << endl;
+
+}
+
 void test_split_key() {
   Sequence<unsigned int, string> seq;
   Sequence<unsigned int, string> seq1;
@@ -606,6 +627,8 @@ int main() {
   test_split_pos_2();
 
   test_split_key();
+
+  test_insert_first_into_middle();
 
   return 0;
 }
