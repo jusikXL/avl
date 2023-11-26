@@ -40,6 +40,45 @@ private:
     return new_node;
   }
 
+  bool _remove_node(Node *ntr)
+  {
+    if (ntr == _start)
+    {
+      return false;
+    }
+
+    Node *to_delete = ntr;
+
+    ntr->_next->_past = ntr->_past;
+    ntr->_past->_next = ntr->_next;
+
+    delete to_delete;
+    _size--;
+
+    return true;
+  }
+
+  bool _remove_last(const Key &key, Node *ntr, unsigned int &n)
+  {
+    if (ntr == _start)
+    {
+      return false;
+    }
+
+    if (_remove_last(key, ntr->_next, n) && n == 0) // after deletion n is updated to n - 1
+    {
+      return true;
+    }
+
+    if (ntr->key == key)
+    {
+      n--;
+      return _remove_node(ntr);
+    }
+
+    return false;
+  }
+
 public:
   Ring() : _size(0)
   {
@@ -47,29 +86,29 @@ public:
   }
 
   /////////////////////////////// ITERATOR CLASS //////////////////////////////
-  class iterator
+  class Iterator
   {
   private:
     Node *_curr;
     friend class Ring<Key, Info>;
 
   public:
-    iterator(Node *node) : _curr(node)
+    Iterator(Node *node) : _curr(node)
     {
-      if (node == nullptr)
+      if (!node)
       {
         throw std::invalid_argument("Iterator cannot be initialized pointing to nullptr");
       }
     }
 
     // prefix increment operator
-    iterator &operator++()
+    Iterator &operator++()
     {
       _curr = _curr->_next;
       return *this;
     }
 
-    bool operator!=(const iterator &src) const
+    bool operator!=(const Iterator &src) const
     {
       return _curr != src._curr;
     }
@@ -90,27 +129,37 @@ public:
   };
   /////////////////////////////// ITERATOR CLASS //////////////////////////////
 
-  iterator begin() const
+  Iterator begin() const
   {
-    return iterator(_start->_next); // First real node what if sentinel???
+    return Iterator(_start->_next); // First real node what if sentinel???
   }
 
-  iterator end() const
+  Iterator end() const
   {
-    return iterator(_start); // Sentinel node
+    return Iterator(_start); // Sentinel node
   }
 
-  iterator push(const Key &key, const Info &info)
+  Iterator push(const Key &key, const Info &info)
   {
     Node *new_node = _insert_node(_start, _start->_next, key, info);
-    return iterator(new_node);
+    return Iterator(new_node);
+  }
+
+  bool remove_last(const Key &key, unsigned int n = 1)
+  {
+    if (n == 0)
+    {
+      return false;
+    }
+
+    return _remove_last(key, begin().get_node(), n);
   }
 };
 
 template <typename Key, typename Info>
 ostream &operator<<(ostream &os, const Ring<Key, Info> &ring)
 {
-  for (typename Ring<Key, Info>::iterator it = ring.begin(); it != ring.end(); ++it)
+  for (typename Ring<Key, Info>::Iterator it = ring.begin(); it != ring.end(); ++it)
   {
     os << "Key: " << it.get_node()->key << ", Info: " << it.get_node()->info << endl;
   }
