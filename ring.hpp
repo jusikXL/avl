@@ -7,12 +7,6 @@
 using namespace std;
 
 template <typename Key, typename Info>
-class Ring;
-
-template <typename Key, typename Info>
-ostream &operator<<(ostream &os, const Ring<Key, Info> &ring);
-
-template <typename Key, typename Info>
 class Ring
 {
 private:
