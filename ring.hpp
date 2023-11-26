@@ -73,10 +73,27 @@ private:
     if (ntr->key == key)
     {
       n--;
-      return _remove_node(ntr);
+      return _remove_node(ntr); // true
     }
 
     return false;
+  }
+
+  bool _remove_all(const Key &key, Node *ntr)
+  {
+    if (ntr == _start)
+    {
+      return false;
+    }
+
+    bool success = _remove_all(key, ntr->_next);
+
+    if (ntr->key == key)
+    {
+      return _remove_node(ntr); // true
+    }
+
+    return success;
   }
 
 public:
@@ -153,6 +170,11 @@ public:
     }
 
     return _remove_last(key, begin().get_node(), n);
+  }
+
+  bool remove_all(const Key &key)
+  {
+    return _remove_all(key, begin().get_node());
   }
 };
 

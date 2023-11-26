@@ -27,7 +27,7 @@ int main()
     ring.push(pair.first, pair.second);
   }
 
-  ring.remove_last("C");
+  cout << ring.remove_all("DS") << endl;
   cout << ring << endl;
 
   return 0;
