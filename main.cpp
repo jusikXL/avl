@@ -9,25 +9,25 @@ using namespace std;
 int main()
 {
 
-  Ring<string, string> ring;
+  Ring<int, string> ring;
 
-  vector<pair<string, string>> initialValues = {
-      {"C", "C node"}, // delete
-      {"A", "A node"},
-      {"C", "C node"}, // delete
-      {"K", "K node"},
-      {"C", "C node"}, // delete
-      {"G", "G node"},
-      {"Y", "Y node"},
-      {"C", "C node"},  // delete
-      {"C", "C node"}}; // delete
+  vector<pair<int, string>> initialValues = {
+      {1, "C node"},
+      {4, "K node"},
+      {3, "C node"},
+      {7, "Y node"},
+      {2, "A node"},
+      {5, "C node"},
+      {6, "G node"},
+  };
 
   for (const auto &pair : initialValues)
   {
-    ring.push(pair.first, pair.second);
+    ring.push_with_priority(pair.first, pair.second);
   }
 
-  cout << ring.remove_all("DS") << endl;
+  ring.push_with_priority(19, "test");
+
   cout << ring << endl;
 
   return 0;

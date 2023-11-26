@@ -96,6 +96,29 @@ private:
     return success;
   }
 
+  bool _push_with_priority(Node *ntr, const Key &key, const Info &info)
+  {
+    if (ntr == _start)
+    {
+      return false;
+    }
+
+    if (_push_with_priority(ntr->_next, key, info))
+    {
+      return true;
+    }
+
+    if (ntr->key > key)
+    {
+      Node *new_node = new Node(key, info, nullptr, ntr->_next);
+      ntr->_next = new_node;
+
+      return true;
+    }
+
+    return false;
+  }
+
 public:
   Ring() : _size(0)
   {
@@ -175,6 +198,16 @@ public:
   bool remove_all(const Key &key)
   {
     return _remove_all(key, begin().get_node());
+  }
+
+  void push_with_priority(const Key &key, const Info &info)
+  {
+    if (!_push_with_priority(begin().get_node(), key, info))
+    {
+      // push front
+      Node *new_node = new Node(key, info, nullptr, _start->_next);
+      _start->_next = new_node;
+    }
   }
 };
 
