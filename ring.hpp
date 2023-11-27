@@ -79,6 +79,42 @@ private:
     return false;
   }
 
+  unsigned int _remove_exactly_last(Node *ntr, const Key &key, unsigned int n)
+  {
+    if (ntr == _start)
+    {
+      return 0;
+    }
+
+    static unsigned int counter = 0;
+
+    if (ntr->key == key)
+    {
+      counter++;
+    }
+
+    unsigned int removed = _remove_exactly_last(ntr->_next, key, n);
+
+    if (counter < n)
+    {
+      return 0; // not found enough key occurences, return 0 up to the first call
+    }
+
+    if (removed == n)
+    {
+      return removed; // removed all the needed key occurences, return removed up to the first call
+    }
+
+    if (ntr->key == key)
+    {
+      _remove_node(ntr);
+
+      return ++removed;
+    }
+
+    return removed;
+  }
+
   bool _remove_all(Node *ntr, const Key &key)
   {
     if (ntr == _start)
@@ -139,6 +175,26 @@ private:
     }
 
     return false;
+  }
+
+  bool _insert_before_each(Node *&ntr, const Key &position, const Key &key, const Info &info)
+  {
+    if (ntr == _start)
+    {
+      return false;
+    }
+
+    bool success = _insert_before_each(ntr->_next, position, key, info);
+
+    if (ntr->key == position)
+    {
+      Node *new_node = new Node(key, info, nullptr, ntr);
+      ntr = new_node;
+
+      return true;
+    }
+
+    return success;
   }
 
   bool _remove_interval(Node *ntr, const Key &from, const Key &to, bool &success = false)
@@ -255,8 +311,14 @@ public:
     return success;
   }
 
+  bool remove_exactly_last(const Key &key, unsigned int n = 1)
+  {
+    return (_remove_exactly_last(_start->_next, key, n) == n);
+  }
+
   void push_with_priority(const Key &key, const Info &info)
   {
+    // singly-linked list
     if (!_push_with_priority(begin().get_node(), key, info))
     {
       // push front
@@ -268,6 +330,12 @@ public:
   bool insert_pair_at(const Key &position, const Key &key_before, const Info &info_before, const Key &key_after, const Info &info_after)
   {
     return _insert_pair_at(begin().get_node(), position, key_before, info_before, key_after, info_after);
+  }
+
+  bool insert_before_each(const Key &position, const Key &key, const Info &info)
+  {
+    // singly-linked list
+    return _insert_before_each(_start->_next, position, key, info);
   }
 };
 
@@ -281,4 +349,4 @@ ostream &operator<<(ostream &os, const Ring<Key, Info> &ring)
   return os;
 }
 
-#endif; // RING_HPP
+#endif // RING_HPP
