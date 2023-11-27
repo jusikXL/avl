@@ -284,8 +284,7 @@ public:
 
   Iterator push(const Key &key, const Info &info)
   {
-    Node *new_node = _insert_node(_start, _start->_next, key, info);
-    return Iterator(new_node);
+    return Iterator(_insert_node(_start, _start->_next, key, info));
   }
 
   bool remove_last(const Key &key, unsigned int n = 1)
