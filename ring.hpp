@@ -58,14 +58,14 @@ private:
     return true;
   }
 
-  bool _remove_last(const Key &key, Node *ntr, unsigned int &n)
+  bool _remove_last(Node *ntr, const Key &key, unsigned int &n)
   {
     if (ntr == _start)
     {
       return false;
     }
 
-    if (_remove_last(key, ntr->_next, n) && n == 0) // after deletion n is updated to n - 1
+    if (_remove_last(ntr->_next, key, n) && n == 0) // after deletion n is updated to n - 1
     {
       return true;
     }
@@ -79,14 +79,14 @@ private:
     return false;
   }
 
-  bool _remove_all(const Key &key, Node *ntr)
+  bool _remove_all(Node *ntr, const Key &key)
   {
     if (ntr == _start)
     {
       return false;
     }
 
-    bool success = _remove_all(key, ntr->_next);
+    bool success = _remove_all(ntr->_next, key);
 
     if (ntr->key == key)
     {
@@ -136,6 +136,31 @@ private:
       _insert_node(ntr->_past, ntr, key_before, info_before);
       _insert_node(ntr, ntr->_next, key_after, info_after);
       return true;
+    }
+
+    return false;
+  }
+
+  bool _remove_interval(Node *ntr, const Key &from, const Key &to, bool &success = false)
+  {
+    if (ntr == _start)
+    {
+      return false;
+    }
+
+    bool continue_removal = _remove_interval(ntr->_next, from, to, success);
+
+    if (ntr->key == to || continue_removal)
+    {
+      // handle remove
+      if (ntr->key == from && ntr->_past->key != from)
+      {
+        // stop when the very first occurence of from is reached
+        return !_remove_node(ntr); // false
+      }
+
+      success = true;
+      return _remove_node(ntr); // true
     }
 
     return false;
@@ -214,12 +239,20 @@ public:
       return false;
     }
 
-    return _remove_last(key, begin().get_node(), n);
+    return _remove_last(begin().get_node(), key, n);
   }
 
   bool remove_all(const Key &key)
   {
-    return _remove_all(key, begin().get_node());
+    return _remove_all(begin().get_node(), key);
+  }
+
+  bool remove_interval(const Key &from, const Key &to)
+  {
+    bool success = false;
+    _remove_interval(begin().get_node(), from, to, success);
+
+    return success;
   }
 
   void push_with_priority(const Key &key, const Info &info)
@@ -232,9 +265,9 @@ public:
     }
   }
 
-  void insert_pair_at(const Key &position, const Key &key_before, const Info &info_before, const Key &key_after, const Info &info_after)
+  bool insert_pair_at(const Key &position, const Key &key_before, const Info &info_before, const Key &key_after, const Info &info_after)
   {
-    _insert_pair_at(begin().get_node(), position, key_before, info_before, key_after, info_after);
+    return _insert_pair_at(begin().get_node(), position, key_before, info_before, key_after, info_after);
   }
 };
 
@@ -248,4 +281,4 @@ ostream &operator<<(ostream &os, const Ring<Key, Info> &ring)
   return os;
 }
 
-#endif // RING_HPP
+#endif; // RING_HPP

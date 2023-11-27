@@ -12,15 +12,14 @@ int main()
   Ring<int, string> ring;
 
   vector<pair<int, string>> initialValues = {
-      {1, "C node"},
-      {4, "K node"},
-      {3, "C node"},
-      {3, "C node"},
-      {7, "Y node"},
-      {2, "A node"},
-      {5, "C node"},
-      {3, "C node"},
-      {6, "G node"},
+      {7, "7 node"},
+      {6, "6 node"},
+      {5, "5 node"},
+      {4, "4 node"},
+      {3, "3 node"},
+      {3, "3 node"},
+      {2, "2 node"},
+      {1, "1 node"},
   };
 
   for (const auto &pair : initialValues)
@@ -28,7 +27,9 @@ int main()
     ring.push(pair.first, pair.second);
   }
 
-  ring.insert_pair_at(3, 77, "77", 66, "66");
+  cout << ring << endl;
+
+  cout << ring.remove_interval(1, 7) << endl;
 
   cout << ring << endl;
 
