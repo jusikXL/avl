@@ -119,6 +119,28 @@ private:
     return false;
   }
 
+  bool _insert_pair_at(Node *ntr, const Key &position, const Key &key_before, const Info &info_before, const Key &key_after, const Info &info_after)
+  {
+    if (ntr == _start)
+    {
+      return false;
+    }
+
+    if (_insert_pair_at(ntr->_next, position, key_before, info_before, key_after, info_after))
+    {
+      return true;
+    }
+
+    if (ntr->key == position)
+    {
+      _insert_node(ntr->_past, ntr, key_before, info_before);
+      _insert_node(ntr, ntr->_next, key_after, info_after);
+      return true;
+    }
+
+    return false;
+  }
+
 public:
   Ring() : _size(0)
   {
@@ -208,6 +230,11 @@ public:
       Node *new_node = new Node(key, info, nullptr, _start->_next);
       _start->_next = new_node;
     }
+  }
+
+  void insert_pair_at(const Key &position, const Key &key_before, const Info &info_before, const Key &key_after, const Info &info_after)
+  {
+    _insert_pair_at(begin().get_node(), position, key_before, info_before, key_after, info_after);
   }
 };
 
