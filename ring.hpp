@@ -1,8 +1,6 @@
 #ifndef RING_HPP
 #define RING_HPP
 
-#include <string>
-#include <cassert>
 #include <iostream>
 using namespace std;
 
