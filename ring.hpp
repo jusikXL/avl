@@ -11,6 +11,7 @@ private:
   /////////////////////////////// NODE //////////////////////////////
   class Node
   {
+
   public:
     Key key;
     Info info;
@@ -25,6 +26,7 @@ private:
   /////////////////////////////// NODE //////////////////////////////
 
   Node *_sentinel;
+  unsigned int _size;
 
   bool is_sentinel(Node *node) const { return node == _sentinel; }
 
@@ -35,7 +37,7 @@ private:
     before->_next = new_node;
     after->_past = new_node;
 
-    size++;
+    _size++;
 
     return new_node;
   }
@@ -52,16 +54,93 @@ private:
     node->_past->_next = node->_next;
 
     delete to_delete;
-    size--;
+    _size--;
 
     return next_node; // returns _sentinel if the last node is deleted
   }
 
 public:
-  Ring() : size(0)
+  /////////////////////////////// ITERATORS //////////////////////////////
+  template <typename Derived>
+  class IteratorBase
   {
-    _sentinel = new Node(Key{}, Info{});
-  }
+  protected:
+    Node *_curr;
+
+  public:
+    IteratorBase(Node *node) : _curr(node) {}
+
+    Derived &operator++()
+    {
+      _curr = _curr->_next;
+      return static_cast<Derived &>(*this);
+    }
+
+    Derived operator++(int)
+    {
+      Derived temp = static_cast<Derived &>(*this);
+      ++(*this);
+      return temp;
+    }
+
+    Derived &operator--()
+    {
+      _curr = _curr->_past;
+      return static_cast<Derived &>(*this);
+    }
+
+    Derived operator--(int)
+    {
+      Derived temp = static_cast<Derived &>(*this);
+      --(*this);
+      return temp;
+    }
+
+    bool operator==(const Derived &other) const
+    {
+      return _curr == other._curr;
+    }
+
+    bool operator!=(const Derived &other) const
+    {
+      return _curr != other._curr;
+    }
+  };
+
+  class Iterator : public IteratorBase<Iterator>
+  {
+  public:
+    using IteratorBase<Iterator>::IteratorBase;
+
+    Key &key()
+    {
+      return this->_curr->key;
+    }
+
+    Info &info()
+    {
+      return this->_curr->info;
+    }
+  };
+
+  class ConstIterator : public IteratorBase<ConstIterator>
+  {
+  public:
+    using IteratorBase<ConstIterator>::IteratorBase;
+
+    const Key &key() const
+    {
+      return this->_curr->key;
+    }
+
+    const Info &info() const
+    {
+      return this->_curr->info;
+    }
+  };
+  /////////////////////////////// ITERATORS //////////////////////////////
+
+  Ring() : _sentinel(new Node(Key{}, Info{})), _size(0) {}
 
   ~Ring()
   {
@@ -69,81 +148,25 @@ public:
     delete _sentinel;
   }
 
-  unsigned int size;
-
-  /////////////////////////////// ITERATORS //////////////////////////////
-  class Iterator
+  Ring &operator=(const Ring &src)
   {
-  private:
-    Node *_curr;
-    friend class Ring<Key, Info>;
-
-  public:
-    Iterator(Node *node) : _curr(node) {}
-
-    Key &key()
+    if (this != &src)
     {
-      return _curr->key;
+      clear();
+
+      ConstIterator last_it = --(src.cend());
+      ConstIterator sentinel_it = src.cend();
+
+      for (ConstIterator it = last_it; it != sentinel_it; it--)
+      {
+        push_front(it.key(), it.info());
+      }
     }
 
-    Info &info()
-    {
-      return _curr->info;
-    }
+    return *this;
+  }
 
-    Iterator &operator++()
-    {
-      _curr = _curr->_next;
-      return *this;
-    }
-
-    Iterator operator++(int)
-    {
-      Iterator temp = *this;
-      ++(*this);
-      return temp;
-    }
-
-    Iterator &operator--()
-    {
-      _curr = _curr->_past;
-      return *this;
-    }
-
-    Iterator operator--(int)
-    {
-      Iterator temp = *this;
-      --(*this);
-      return temp;
-    }
-
-    bool operator==(const Iterator &other) const
-    {
-      return _curr == other._curr;
-    }
-
-    bool operator!=(const Iterator &other) const
-    {
-      return _curr != other._curr;
-    }
-  };
-
-  class ConstIterator : public Iterator
-  {
-  public:
-    using Iterator::Iterator;
-
-    const Key &key() const
-    {
-      return Iterator::_curr->key;
-    }
-
-    const Info &info() const
-    {
-      return Iterator::_curr->info;
-    }
-  };
-  /////////////////////////////// ITERATORS //////////////////////////////
+  Ring(const Ring &src) : Ring() { *this = src; }
 
   Iterator begin() { return Iterator(_sentinel->_next); }
   ConstIterator cbegin() const { return ConstIterator(_sentinel->_next); }
@@ -163,7 +186,7 @@ public:
 
   void clear()
   {
-    while (size)
+    while (_size)
     {
       _pop(_sentinel->_next);
     }
