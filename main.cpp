@@ -9,7 +9,7 @@ using namespace std;
 int main()
 {
 
-  Ring<int, string> originalRing;
+  Ring<int, string> ring;
 
   vector<pair<int, string>> initialValues = {
       {5, "5 node"},
@@ -25,21 +25,17 @@ int main()
 
   for (const auto &pair : initialValues)
   {
-    originalRing.push_front(pair.first, pair.second);
+    ring.push_front(pair.first, pair.second);
   }
 
-  cout << "Original Ring:" << endl;
-  cout << originalRing << endl;
+  Ring<int, string>::Iterator it = ring.begin();
+  for (int i = 1; i <= 3; i++)
+  {
+    it++;
+  }
 
-  Ring<int, string> copiedRing(originalRing);
-  cout << "Copied Ring using Copy Constructor:" << endl;
-  cout << copiedRing << endl;
-
-  Ring<int, string> assignedRing;
-  assignedRing.push_front(123, "123");
-  assignedRing = originalRing;
-  cout << "Assigned Ring using Assignment Operator:" << endl;
-  cout << assignedRing << endl;
+  cout << (ring.erase(it)).key() << endl;
+  cout << ring << endl;
 
   return 0;
 }

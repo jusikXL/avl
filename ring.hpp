@@ -66,10 +66,10 @@ public:
   {
   protected:
     Node *_curr;
-
-  public:
+    friend class Ring<Key, Info>;
     IteratorBase(Node *node) : _curr(node) {}
 
+  public:
     Derived &operator++()
     {
       _curr = _curr->_next;
@@ -168,6 +168,11 @@ public:
   Iterator pop_front()
   {
     return Iterator(_pop(_sentinel->_next));
+  }
+
+  Iterator erase(Iterator position)
+  {
+    return Iterator(_pop(position._curr));
   }
 
   void clear()
