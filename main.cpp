@@ -1,5 +1,4 @@
 #include "ring.hpp"
-#include "tree.hpp"
 
 #include <string>
 #include <cassert>
@@ -10,7 +9,7 @@ using namespace std;
 int main()
 {
 
-  BST<int, string> tree;
+  Ring<int, string> ring;
 
   vector<pair<int, string>> initialValues = {
       {5, "5 node"},
@@ -26,13 +25,10 @@ int main()
 
   for (const auto &pair : initialValues)
   {
-    tree.insert(pair.first, pair.second);
+    ring.push(pair.first, pair.second);
   }
 
-  cout << "Tree height: " << tree.find_height() << endl;
-  cout << "Number of leaves: " << tree.find_number_of_leaves() << endl;
-  cout << "Odd nodes: " << tree.count_odd() << endl;
-  cout << "Even nodes: " << tree.count_even() << endl;
+  cout << ring << endl;
 
   return 0;
 }
