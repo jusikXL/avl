@@ -199,4 +199,23 @@ ostream &operator<<(ostream &os, const Ring<Key, Info> &ring)
   return os;
 }
 
+template <typename Key, typename Info>
+Ring<Key, Info> filter(const Ring<Key, Info> &src, bool (*pred)(const Key &))
+{
+  Ring<Key, Info> result;
+
+  typename Ring<Key, Info>::ConstIterator it_last = --(src.cend());
+  typename Ring<Key, Info>::ConstIterator it_sentinel = --(src.cbegin());
+
+  for (typename Ring<Key, Info>::ConstIterator it = it_last; it != it_sentinel; it--)
+  {
+    if (pred(it.key()))
+    {
+      result.push_front(it.key(), it.info());
+    }
+  }
+
+  return result;
+}
+
 #endif // RING_HPP
