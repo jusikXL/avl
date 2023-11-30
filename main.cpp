@@ -35,5 +35,11 @@ int main()
   cout << "Copied Ring using Copy Constructor:" << endl;
   cout << copiedRing << endl;
 
+  Ring<int, string> assignedRing;
+  assignedRing.push_front(123, "123");
+  assignedRing = originalRing;
+  cout << "Assigned Ring using Assignment Operator:" << endl;
+  cout << assignedRing << endl;
+
   return 0;
 }

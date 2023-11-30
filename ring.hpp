@@ -112,15 +112,8 @@ public:
   public:
     using IteratorBase<Iterator>::IteratorBase;
 
-    Key &key()
-    {
-      return this->_curr->key;
-    }
-
-    Info &info()
-    {
-      return this->_curr->info;
-    }
+    Key &key() { return this->_curr->key; }
+    Info &info() { return this->_curr->info; }
   };
 
   class ConstIterator : public IteratorBase<ConstIterator>
@@ -128,15 +121,8 @@ public:
   public:
     using IteratorBase<ConstIterator>::IteratorBase;
 
-    const Key &key() const
-    {
-      return this->_curr->key;
-    }
-
-    const Info &info() const
-    {
-      return this->_curr->info;
-    }
+    const Key &key() const { return this->_curr->key; }
+    const Info &info() const { return this->_curr->info; }
   };
   /////////////////////////////// ITERATORS //////////////////////////////
 
@@ -154,10 +140,10 @@ public:
     {
       clear();
 
-      ConstIterator last_it = --(src.cend());
-      ConstIterator sentinel_it = src.cend();
+      ConstIterator it_last = --(src.cend());
+      ConstIterator it_sentinel = --(src.cbegin());
 
-      for (ConstIterator it = last_it; it != sentinel_it; it--)
+      for (ConstIterator it = it_last; it != it_sentinel; it--)
       {
         push_front(it.key(), it.info());
       }
