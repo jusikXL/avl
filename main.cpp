@@ -28,13 +28,10 @@ int main()
     ring.push_front(pair.first, pair.second);
   }
 
-  Ring<int, string>::Iterator it = ring.begin();
-  for (int i = 1; i <= 3; i++)
-  {
-    it++;
-  }
+  Ring<int, string>::Iterator it = ring.end();
 
-  cout << (ring.erase(it)).key() << endl;
+  cout << "before" << it.key() << endl;
+  cout << (ring.insert(it, 11, "11 node")).key() << endl;
   cout << ring << endl;
 
   return 0;

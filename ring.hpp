@@ -175,6 +175,11 @@ public:
     return Iterator(_pop(position._curr));
   }
 
+  Iterator insert(Iterator position, const Key &key, const Info &info)
+  {
+    return Iterator(_push(position._curr->_past, position._curr, key, info));
+  }
+
   void clear()
   {
     while (_size)
