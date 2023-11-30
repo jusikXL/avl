@@ -25,9 +25,10 @@ int main()
 
   for (const auto &pair : initialValues)
   {
-    ring.push(pair.first, pair.second);
+    ring.push_front(pair.first, pair.second);
   }
 
+  // ring.clear();
   cout << ring << endl;
 
   return 0;

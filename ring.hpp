@@ -25,44 +25,45 @@ private:
   /////////////////////////////// NODE CLASS //////////////////////////////
 
   Node *_sentinel;
-  unsigned int _size;
 
-  Node *_insert_node(Node *before, Node *after, const Key &key, const Info &info)
+  bool is_sentinel(Node *node) const { return node == _sentinel; }
+
+  Node *_push(Node *before, Node *after, const Key &key, const Info &info)
   {
     Node *new_node = new Node(key, info, before, after);
 
     before->_next = new_node;
     after->_past = new_node;
 
-    _size++;
+    size++;
     return new_node;
   }
 
-  bool _remove_node(Node *ntr)
+  Node *_pop(Node *node)
   {
-    if (ntr == _sentinel)
-    {
-      return false;
-    }
+    if (is_sentinel(node))
+      return nullptr;
 
-    Node *to_delete = ntr;
+    Node *to_delete = node;
 
-    ntr->_next->_past = ntr->_past;
-    ntr->_past->_next = ntr->_next;
+    node->_next->_past = node->_past;
+    node->_past->_next = node->_next;
 
     delete to_delete;
-    _size--;
+    size--;
 
-    return true;
+    return node->_next;
   }
 
 public:
-  Ring() : _size(0)
+  Ring() : size(0)
   {
     _sentinel = new Node(Key{}, Info{});
   }
 
-  /////////////////////////////// ITERATOR CLASS //////////////////////////////
+  unsigned int size;
+
+  /////////////////////////////// ITERATORS //////////////////////////////
   class Iterator
   {
   private:
@@ -70,64 +71,104 @@ public:
     friend class Ring<Key, Info>;
 
   public:
-    Iterator(Node *node) : _curr(node)
+    Iterator(Node *node) : _curr(node) {}
+
+    Key &key()
     {
-      if (!node)
-      {
-        throw invalid_argument("Iterator cannot be initialized pointing to nullptr");
-      }
+      return _curr->key;
     }
 
-    // prefix increment operator
+    Info &info()
+    {
+      return _curr->info;
+    }
+
     Iterator &operator++()
     {
       _curr = _curr->_next;
       return *this;
     }
 
-    bool operator!=(const Iterator &src) const
+    Iterator operator++(int)
     {
-      return _curr != src._curr;
+      Iterator temp = *this;
+      ++(*this);
+      return temp;
     }
 
-    // Dereference operator
-    // std::pair<Key, Info> &operator*()
-    // {
-    //   return {_curr->key, _curr->info};
-    // }
-
-    // Equality and Inequality operators
-    // ...
-
-    Node *get_node() const
+    Iterator &operator--()
     {
-      return _curr;
+      _curr = _curr->_past;
+      return *this;
+    }
+
+    Iterator operator--(int)
+    {
+      Iterator temp = *this;
+      --(*this);
+      return temp;
+    }
+
+    bool operator==(const Iterator &other) const
+    {
+      return _curr == other._curr;
+    }
+
+    bool operator!=(const Iterator &other) const
+    {
+      return _curr != other._curr;
     }
   };
-  /////////////////////////////// ITERATOR CLASS //////////////////////////////
 
-  Iterator begin() const
+  class ConstIterator : public Iterator
   {
-    return Iterator(_sentinel->_next);
+  public:
+    using Iterator::Iterator;
+
+    const Key &key() const
+    {
+      return Iterator::_curr->key;
+    }
+
+    const Info &info() const
+    {
+      return Iterator::_curr->info;
+    }
+  };
+
+  /////////////////////////////// ITERATORS //////////////////////////////
+
+  Iterator begin() const { return Iterator(_sentinel->_next); }
+  ConstIterator cbegin() const { return ConstIterator(_sentinel->_next); }
+
+  Iterator end() const { return Iterator(_sentinel); }
+  ConstIterator cend() const { return ConstIterator(_sentinel); }
+
+  Iterator push_front(const Key &key, const Info &info)
+  {
+    return Iterator(_push(_sentinel, _sentinel->_next, key, info));
   }
 
-  Iterator end() const
+  Iterator pop_front()
   {
-    return Iterator(_sentinel);
+    return Iterator(_pop(_sentinel->_next));
   }
 
-  Iterator push(const Key &key, const Info &info)
+  void clear()
   {
-    return Iterator(_insert_node(_sentinel, _sentinel->_next, key, info));
+    while (size)
+    {
+      _pop(_sentinel->_next);
+    }
   }
 };
 
 template <typename Key, typename Info>
 ostream &operator<<(ostream &os, const Ring<Key, Info> &ring)
 {
-  for (typename Ring<Key, Info>::Iterator it = ring.begin(); it != ring.end(); ++it)
+  for (typename Ring<Key, Info>::ConstIterator it = ring.cbegin(); it != ring.cend(); ++it)
   {
-    os << "Key: " << it.get_node()->key << ", Info: " << it.get_node()->info << endl;
+    os << "Key: " << it.key() << ", Info: " << it.info() << endl;
   }
   return os;
 }
