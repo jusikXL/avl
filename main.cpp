@@ -29,6 +29,11 @@ int main()
   }
 
   // ring.clear();
+  while (ring.size)
+  {
+    cout << ring.pop_front().key() << endl;
+  }
+
   cout << ring << endl;
 
   return 0;

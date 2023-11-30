@@ -8,7 +8,7 @@ template <typename Key, typename Info>
 class Ring
 {
 private:
-  /////////////////////////////// NODE CLASS //////////////////////////////
+  /////////////////////////////// NODE //////////////////////////////
   class Node
   {
   public:
@@ -22,7 +22,7 @@ private:
     Node *_next;
     friend class Ring<Key, Info>;
   };
-  /////////////////////////////// NODE CLASS //////////////////////////////
+  /////////////////////////////// NODE //////////////////////////////
 
   Node *_sentinel;
 
@@ -36,15 +36,17 @@ private:
     after->_past = new_node;
 
     size++;
+
     return new_node;
   }
 
   Node *_pop(Node *node)
   {
     if (is_sentinel(node))
-      return nullptr;
+      return _sentinel;
 
     Node *to_delete = node;
+    Node *next_node = node->_next;
 
     node->_next->_past = node->_past;
     node->_past->_next = node->_next;
@@ -52,13 +54,19 @@ private:
     delete to_delete;
     size--;
 
-    return node->_next;
+    return next_node; // returns _sentinel if the last node is deleted
   }
 
 public:
   Ring() : size(0)
   {
     _sentinel = new Node(Key{}, Info{});
+  }
+
+  ~Ring()
+  {
+    clear();
+    delete _sentinel;
   }
 
   unsigned int size;
@@ -135,13 +143,12 @@ public:
       return Iterator::_curr->info;
     }
   };
-
   /////////////////////////////// ITERATORS //////////////////////////////
 
-  Iterator begin() const { return Iterator(_sentinel->_next); }
+  Iterator begin() { return Iterator(_sentinel->_next); }
   ConstIterator cbegin() const { return ConstIterator(_sentinel->_next); }
 
-  Iterator end() const { return Iterator(_sentinel); }
+  Iterator end() { return Iterator(_sentinel); }
   ConstIterator cend() const { return ConstIterator(_sentinel); }
 
   Iterator push_front(const Key &key, const Info &info)
