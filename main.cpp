@@ -43,9 +43,7 @@ int main()
     ring.push_front(pair.first, pair.second);
   }
 
-  Ring<string, int> filtered_ring = filter(ring, alwaysFalse);
-
-  cout << filtered_ring << endl;
+  cout << ring.find("q").info() << endl;
 
   return 0;
 }

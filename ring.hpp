@@ -124,8 +124,29 @@ public:
     const Key &key() const { return this->_curr->key; }
     const Info &info() const { return this->_curr->info; }
   };
+
+  Iterator begin() { return Iterator(_sentinel->_next); }
+  ConstIterator cbegin() const { return ConstIterator(_sentinel->_next); }
+
+  Iterator end() { return Iterator(_sentinel); }
+  ConstIterator cend() const { return ConstIterator(_sentinel); }
   /////////////////////////////// ITERATORS //////////////////////////////
 
+private:
+  Iterator _find(const Key &search_key, Iterator from, Iterator to)
+  {
+    for (Iterator it = from; it != to; ++it)
+    {
+      if (it.key() == search_key)
+      {
+        return it;
+      }
+    }
+
+    return to;
+  }
+
+public:
   Ring() : _sentinel(new Node(Key{}, Info{})), _size(0) {}
 
   ~Ring()
@@ -154,12 +175,6 @@ public:
 
   Ring(const Ring &src) : Ring() { *this = src; }
 
-  Iterator begin() { return Iterator(_sentinel->_next); }
-  ConstIterator cbegin() const { return ConstIterator(_sentinel->_next); }
-
-  Iterator end() { return Iterator(_sentinel); }
-  ConstIterator cend() const { return ConstIterator(_sentinel); }
-
   Iterator push_front(const Key &key, const Info &info)
   {
     return Iterator(_push(_sentinel, _sentinel->_next, key, info));
@@ -186,6 +201,11 @@ public:
     {
       _pop(_sentinel->_next);
     }
+  }
+
+  Iterator find(const Key &search_key)
+  {
+    return _find(search_key, begin(), end());
   }
 };
 
