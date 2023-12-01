@@ -7,13 +7,11 @@
 #include <cassert>
 using namespace std;
 
-int concatenate(const string &key, const int &i1, const int &i2)
-{
+int concatenate(const string& key, const int& i1, const int& i2) {
   return i1 + i2;
 };
 
-void shuffle()
-{
+void shuffle() {
   Ring<string, int> ring_first;
   Ring<string, int> ring_second;
 
@@ -32,13 +30,11 @@ void shuffle()
       {"bir", 1},
   };
 
-  for (const auto &pair : nodes_first)
-  {
+  for (const auto& pair : nodes_first) {
     ring_first.push_front(pair.first, pair.second);
   }
 
-  for (const auto &pair : nodes_second)
-  {
+  for (const auto& pair : nodes_second) {
     ring_second.push_front(pair.first, pair.second);
   }
 
@@ -49,8 +45,7 @@ void shuffle()
   cout << ring_shuffled << endl;
 }
 
-void push()
-{
+void push() {
   Ring<string, string> ring;
 
   vector<pair<string, string>> nodes = {
@@ -59,16 +54,14 @@ void push()
       {"A", "A node"},
   };
 
-  for (const auto &pair : nodes)
-  {
+  for (const auto& pair : nodes) {
     ring.push_front(pair.first, pair.second);
   }
 
   // should change _past pointers
   // so that we can traverse the ring backwards using iterators
   auto it = --(ring.cend());
-  for (const auto &pair : nodes)
-  {
+  for (const auto& pair : nodes) {
     // should sequentially add keys and infos
     assert(it.key() == pair.first && it.info() == pair.second);
 
@@ -78,8 +71,7 @@ void push()
   // should change _next pointers
   // so that we can traverse the ring forwards using iterators
   auto it_revered = ring.cbegin();
-  for (vector<pair<string, string>>::reverse_iterator i = nodes.rbegin(); i != nodes.rend(); ++i)
-  {
+  for (vector<pair<string, string>>::reverse_iterator i = nodes.rbegin(); i != nodes.rend(); ++i) {
     assert(it_revered.key() == i->first && it_revered.info() == i->second);
 
     it_revered++;
@@ -93,8 +85,7 @@ void push()
   assert(it_pushed == ring.begin());
 }
 
-void insert()
-{
+void insert() {
   Ring<string, string> ring;
 
   // should insert in an empty ring if begin() is provided as a position
@@ -115,8 +106,7 @@ void insert()
   assert(it_second.key() == "before key" && it_second.info() == "before info");
 }
 
-void pop()
-{
+void pop() {
   Ring<int, string> ring;
 
   vector<pair<int, string>> nodes = {
@@ -126,29 +116,28 @@ void pop()
       {1, "A node"},
   };
 
-  for (const auto &pair : nodes)
-  {
+  for (const auto& pair : nodes) {
     ring.push_front(pair.first, pair.second);
   }
 
-  for (unsigned int i = 0; i < nodes.size(); i++)
-  {
+  for (unsigned int i = 0; i < nodes.size(); i++) {
     auto it_next = ring.pop_front();
 
     // should decrease the size
     assert(ring.size() == nodes.size() - i - 1);
 
-    if (i != nodes.size() - 1)
-    {
+    if (i != nodes.size() - 1) {
       // should return iterator to a next node after removed
       assert(it_next.key() == nodes[nodes.size() - i - 2].first && it_next.info() == nodes[nodes.size() - i - 2].second);
 
-      // should change the _next pointer of the previous node to its _next
+      // should change the _next pointer of the _sentinel to its _next
       assert(ring.begin().key() == nodes[nodes.size() - i - 2].first && ring.begin().info() == nodes[nodes.size() - i - 2].second);
-    }
-    else
-    {
+    } else {
+      assert(it_next.key() == int{});
       assert(ring.begin().key() == int{});
     }
+
+    // should change the _past pointer of the next node to its _sentinel
+    assert((--it_next).key() == int{});
   }
 }

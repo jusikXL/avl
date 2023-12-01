@@ -1,11 +1,9 @@
 #include "bi_ring_test.cpp"
 
-int main()
-{
+int main() {
   // shuffle();
   // push();
   // insert();
-
-  pop();
+  // pop();
   return 0;
 }
