@@ -214,7 +214,7 @@ ostream &operator<<(ostream &os, const Ring<Key, Info> &ring)
 {
   for (typename Ring<Key, Info>::ConstIterator it = ring.cbegin(); it != ring.cend(); ++it)
   {
-    os << "Key: " << it.key() << ", Info: " << it.info() << endl;
+    os << it.key() << " : " << it.info() << endl;
   }
   return os;
 }
@@ -230,6 +230,32 @@ Ring<Key, Info> filter(const Ring<Key, Info> &src, bool (*pred)(const Key &))
   for (typename Ring<Key, Info>::ConstIterator it = it_last; it != it_sentinel; it--)
   {
     if (pred(it.key()))
+    {
+      result.push_front(it.key(), it.info());
+    }
+  }
+
+  return result;
+}
+
+template <typename Key, typename Info>
+Ring<Key, Info> unique(const Ring<Key, Info> &src, Info(aggregate)(const Key &, const Info &, const Info &))
+{
+  Ring<Key, Info> result;
+
+  typename Ring<Key, Info>::ConstIterator it_last = --(src.cend());
+  typename Ring<Key, Info>::ConstIterator it_sentinel = --(src.cbegin());
+
+  for (typename Ring<Key, Info>::ConstIterator it = it_last; it != it_sentinel; it--)
+  {
+    typename Ring<Key, Info>::Iterator it_res = result.find(it.key());
+
+    if (it_res != result.end())
+    {
+      // if key's been added to result previously
+      it_res.info() = aggregate(it.key(), it_res.info(), it.info());
+    }
+    else
     {
       result.push_front(it.key(), it.info());
     }
