@@ -13,7 +13,8 @@ int concatenate(const string &key, const int &i1, const int &i2)
 
 int main()
 {
-  Ring<string, int> ring;
+  Ring<string, int> ring_first;
+  Ring<string, int> ring_second;
 
   vector<pair<string, int>> initialValues = {
       {"a", 1},
@@ -22,37 +23,20 @@ int main()
       {"d", 4},
       {"e", 5},
       {"f", 6},
-      {"q", 17},
       {"g", 7},
       {"h", 8},
-      {"q", 17},
       {"i", 9},
-      {"a", 1},
-      {"a", 1},
       {"j", 10},
-      {"k", 11},
-      {"l", 12},
-      {"m", 13},
-      {"q", 17},
-      {"n", 14},
-      {"o", 15},
-      {"p", 16},
-      {"a", 1},
-      {"q", 17},
-      {"r", 18},
-      {"s", 19},
-      {"t", 20},
-      {"a", 1},
   };
 
   for (const auto &pair : initialValues)
   {
-    ring.push_front(pair.first, pair.second);
+    ring_first.push_front(pair.first, pair.second);
+    ring_second.push_front(pair.first, pair.second);
   }
-  cout << ring << endl;
 
-  Ring<string, int> uniqueRing = unique(ring, concatenate);
-  cout << uniqueRing << endl;
+  Ring<string, int> ring_merged = join(ring_first, ring_second);
+  cout << ring_merged << endl;
 
   return 0;
 }

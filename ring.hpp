@@ -224,10 +224,7 @@ Ring<Key, Info> filter(const Ring<Key, Info> &src, bool (*pred)(const Key &))
 {
   Ring<Key, Info> result;
 
-  typename Ring<Key, Info>::ConstIterator it_last = --(src.cend());
-  typename Ring<Key, Info>::ConstIterator it_sentinel = --(src.cbegin());
-
-  for (typename Ring<Key, Info>::ConstIterator it = it_last; it != it_sentinel; it--)
+  for (typename Ring<Key, Info>::ConstIterator it = --(src.cend()); it != --(src.cbegin()); it--)
   {
     if (pred(it.key()))
     {
@@ -243,10 +240,7 @@ Ring<Key, Info> unique(const Ring<Key, Info> &src, Info(aggregate)(const Key &, 
 {
   Ring<Key, Info> result;
 
-  typename Ring<Key, Info>::ConstIterator it_last = --(src.cend());
-  typename Ring<Key, Info>::ConstIterator it_sentinel = --(src.cbegin());
-
-  for (typename Ring<Key, Info>::ConstIterator it = it_last; it != it_sentinel; it--)
+  for (typename Ring<Key, Info>::ConstIterator it = --(src.cend()); it != --(src.cbegin()); it--)
   {
     typename Ring<Key, Info>::Iterator it_res = result.find(it.key());
 
@@ -262,6 +256,30 @@ Ring<Key, Info> unique(const Ring<Key, Info> &src, Info(aggregate)(const Key &, 
   }
 
   return result;
+}
+
+template <typename Key, typename Info>
+Info _concatenate_info(const Key &, const Info &i1, const Info &i2)
+{
+  return i1 + i2;
+}
+
+template <typename Key, typename Info>
+Ring<Key, Info> join(const Ring<Key, Info> &first, const Ring<Key, Info> &second)
+{
+  Ring<Key, Info> result;
+
+  for (typename Ring<Key, Info>::ConstIterator it = --(first.cend()); it != --(first.cbegin()); it--)
+  {
+    result.push_front(it.key(), it.info());
+  }
+
+  for (typename Ring<Key, Info>::ConstIterator it = --(second.cend()); it != --(second.cbegin()); it--)
+  {
+    result.push_front(it.key(), it.info());
+  }
+
+  return unique(result, _concatenate_info<Key, Info>);
 }
 
 #endif // RING_HPP
