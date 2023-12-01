@@ -4,7 +4,7 @@ OBJDIR = obj
 test.out: $(OBJDIR)/main.o
 	g++ $(WFLAGS) -g $(OBJDIR)/main.o -o test.out
 
-$(OBJDIR)/main.o: main.cpp ring.hpp
+$(OBJDIR)/main.o: main.cpp bi_ring_test.cpp bi_ring.h bi_ring_test.h
 	g++ $(WFLAGS) -g -c main.cpp -o $(OBJDIR)/main.o
 
 clean:

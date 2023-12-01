@@ -194,6 +194,7 @@ ostream& operator<<(ostream& os, const Ring<Key, Info>& ring) {
   return os;
 }
 
+
 template <typename Key, typename Info>
 Ring<Key, Info> filter(const Ring<Key, Info>& src, bool (*pred)(const Key&)) {
   Ring<Key, Info> result;
