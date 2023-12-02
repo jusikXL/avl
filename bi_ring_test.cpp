@@ -7,9 +7,29 @@
 #include <cassert>
 using namespace std;
 
-int concatenate(const string& key, const int& i1, const int& i2) {
+int _concatenate(const string& key, const int& i1, const int& i2) {
   return i1 + i2;
 };
+
+pair<Ring<int, string>, vector<pair<int, string>>>
+_ring_fixture() {
+  // Call the fixture to initialize ring and nodes
+
+  Ring<int, string> ring;
+
+  vector<pair<int, string>> nodes = {
+      {4, "D node"},
+      {3, "C node"},
+      {2, "B node"},
+      {1, "A node"},
+  };
+
+  for (const auto& pair : nodes) {
+    ring.push_front(pair.first, pair.second);
+  }
+
+  return make_pair(ring, nodes);
+}
 
 void shuffle() {
   Ring<string, int> ring_first;
@@ -46,17 +66,7 @@ void shuffle() {
 }
 
 void push() {
-  Ring<string, string> ring;
-
-  vector<pair<string, string>> nodes = {
-      {"C", "C node"},
-      {"B", "B node"},
-      {"A", "A node"},
-  };
-
-  for (const auto& pair : nodes) {
-    ring.push_front(pair.first, pair.second);
-  }
+  auto [ring, nodes] = _ring_fixture();
 
   // should change _past pointers
   // so that we can traverse the ring backwards using iterators
@@ -71,7 +81,7 @@ void push() {
   // should change _next pointers
   // so that we can traverse the ring forwards using iterators
   auto it_revered = ring.cbegin();
-  for (vector<pair<string, string>>::reverse_iterator i = nodes.rbegin(); i != nodes.rend(); ++i) {
+  for (auto i = nodes.rbegin(); i != nodes.rend(); ++i) {
     assert(it_revered.key() == i->first && it_revered.info() == i->second);
 
     it_revered++;
@@ -81,7 +91,7 @@ void push() {
   assert(ring.size() == nodes.size());
 
   // should return a correct iterator to the just pushed node
-  auto it_pushed = ring.push_front("D", "D node");
+  auto it_pushed = ring.push_front(5, "E node");
   assert(it_pushed == ring.begin());
 }
 
@@ -107,18 +117,7 @@ void insert() {
 }
 
 void pop() {
-  Ring<int, string> ring;
-
-  vector<pair<int, string>> nodes = {
-      {4, "D node"},
-      {3, "C node"},
-      {2, "B node"},
-      {1, "A node"},
-  };
-
-  for (const auto& pair : nodes) {
-    ring.push_front(pair.first, pair.second);
-  }
+  auto [ring, nodes] = _ring_fixture();
 
   for (unsigned int i = 0; i < nodes.size(); i++) {
     auto it_next = ring.pop_front();
@@ -137,7 +136,36 @@ void pop() {
       assert(ring.begin().key() == int{});
     }
 
-    // should change the _past pointer of the next node to its _sentinel
+    // should change the _past pointer of the next node to _sentinel
     assert((--it_next).key() == int{});
   }
+
+
+  // should return _sentinel while trying to pop_front on the empty ring
+  Ring <int, string> ring_empty;
+
+  assert(ring_empty.pop_front() == ring_empty.begin());
 }
+
+void erase() {
+  auto [ring, nodes] = _ring_fixture();
+
+  // should remove the first node - covered in pop()
+  // should decrease the size - covered in pop()
+  // should return _sentinel if trying to erease _sentinel - covered in pop()
+
+  auto it = ring.begin();
+  it++; // second node
+
+  auto it_next = ring.erase(it);
+
+  // should return pointer to the next node after removed
+  assert(it_next.key() == nodes[nodes.size() - 3].first);
+
+  // should change _next pointer of the previous node to its next
+  assert((++ring.begin()).key() == it_next.key());
+
+  // should change _past pointer of the next node to its past
+  assert((--it_next).key() == ring.begin().key());
+}
+
