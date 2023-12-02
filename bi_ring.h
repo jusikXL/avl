@@ -9,12 +9,10 @@ class Ring {
 private:
   /////////////////////////////// NODE //////////////////////////////
   class Node {
-
   public:
-    Key key;
-    Info info;
+    pair<Key, Info> data;
     Node(const Key& k, const Info& i, Node* p = nullptr, Node* n = nullptr)
-      : key(k), info(i), _past(p ? p : this), _next(n ? n : this) { }
+      : data(k, i), _past(p ? p : this), _next(n ? n : this) { }
 
   private:
     Node* _past;
@@ -56,25 +54,26 @@ private:
   }
 
   /////////////////////////////// ITERATORS //////////////////////////////
-  template <typename KeyType, typename InfoType>
+  template <typename DataType>
   class IteratorBase {
   private:
+    friend class Ring<Key, Info>;
+
     const Ring<Key, Info>* _owner;
     Node* _curr;
-    friend class Ring<Key, Info>;
+
     IteratorBase(Node* node, const Ring* owner) : _owner(owner), _curr(node) { }
 
   public:
-    // jump over sentinel
     IteratorBase& operator++() {
       _curr = _owner->_is_sentinel(_curr->_next) ?
         _curr->_next->_next : _curr->_next;
 
-      return static_cast<IteratorBase&>(*this);
+      return *this;
     }
 
     IteratorBase operator++(int) {
-      IteratorBase temp = static_cast<IteratorBase&>(*this);
+      IteratorBase temp = *this;
       ++(*this);
       return temp;
     }
@@ -83,11 +82,11 @@ private:
       _curr = _owner->_is_sentinel(_curr->_past) ?
         _curr->_past->_past : _curr->_past;
 
-      return static_cast<IteratorBase&>(*this);
+      return *this;
     }
 
     IteratorBase operator--(int) {
-      IteratorBase temp = static_cast<IteratorBase&>(*this);
+      IteratorBase temp = *this;
       --(*this);
       return temp;
     }
@@ -100,13 +99,28 @@ private:
       return _curr != other._curr;
     }
 
-    KeyType& key() { return this->_curr->key; }
-    InfoType& info() { return this->_curr->info; }
+    DataType& operator*() const {
+      return _curr->data;
+    }
+
+    DataType* operator->() const {
+      return &_curr->data;
+    }
+
+    IteratorBase& next() {
+      _curr = _curr->_next;
+      return *this;
+    }
+
+    IteratorBase& past() {
+      _curr = _curr->_past;
+      return *this;
+    }
   };
 
 public:
-  typedef IteratorBase<Key, Info> Iterator;
-  typedef IteratorBase<const Key, const Info> ConstIterator;
+  typedef IteratorBase<pair<Key, Info>> Iterator;
+  typedef IteratorBase<const pair<Key, Info>> ConstIterator;
 
   Iterator begin() { return Iterator(_sentinel->_next, this); }
   ConstIterator cbegin() const { return ConstIterator(_sentinel->_next, this); }
@@ -118,7 +132,7 @@ public:
 private:
   Iterator _find(const Key& search_key, Iterator from, Iterator to) {
     for (Iterator it = from; it != to; it++) {
-      if (it.key() == search_key) {
+      if (it->first == search_key) {
         return it;
       }
     }
@@ -138,11 +152,8 @@ public:
     if (this != &src) {
       clear();
 
-      ConstIterator it_last = --(src.cend());
-      ConstIterator it_sentinel = --(src.cbegin());
-
-      for (ConstIterator it = it_last; it != it_sentinel; it--) {
-        push_front(it.key(), it.info());
+      for (ConstIterator it = --(src.cend()); it != src.cend(); it.past()) {
+        push_front(it->first, it->second);
       }
     }
 
@@ -151,7 +162,7 @@ public:
 
   Ring(const Ring& src) : Ring() { *this = src; }
 
-  unsigned int size() {
+  unsigned int size() const {
     return _size;
   }
 
@@ -188,9 +199,10 @@ public:
 
 template <typename Key, typename Info>
 ostream& operator<<(ostream& os, const Ring<Key, Info>& ring) {
-  for (typename Ring<Key, Info>::ConstIterator it = ring.cbegin(); it != ring.cend(); ++it) {
-    os << it.key() << " : " << it.info() << endl;
+  for (auto it = ring.cbegin(); it != ring.cend(); it.next()) {
+    os << it->first << " : " << it->second << endl;
   }
+
   return os;
 }
 
@@ -200,9 +212,9 @@ template <typename Key, typename Info>
 Ring<Key, Info> filter(const Ring<Key, Info>& src, bool (*pred)(const Key&)) {
   Ring<Key, Info> result;
 
-  for (typename Ring<Key, Info>::ConstIterator it = --(src.cend()); it != --(src.cbegin()); it--) {
-    if (pred(it.key())) {
-      result.push_front(it.key(), it.info());
+  for (auto it = --(src.cend()); it != src.cend(); it.past()) {
+    if (pred(it->first)) {
+      result.push_front(it->first, it->second);
     }
   }
 
@@ -213,18 +225,18 @@ template <typename Key, typename Info>
 Ring<Key, Info> unique(const Ring<Key, Info>& src, Info(aggregate)(const Key&, const Info&, const Info&)) {
   Ring<Key, Info> result;
 
-  for (typename Ring<Key, Info>::ConstIterator it = --(src.cend()); it != --(src.cbegin()); it--) {
-    typename Ring<Key, Info>::Iterator it_res = result.find(it.key());
+  for (auto it = --(src.cend()); it != src.cend(); it.past()) {
+    auto found_it = result.find(it->first);
 
-    if (it_res != result.end()) {
+    if (found_it != result.end()) {
       // if key's been added to result previously
-      it_res.info() = aggregate(it.key(), it_res.info(), it.info());
+      found_it->second = aggregate(it->first, found_it->second, it->second);
     } else {
-      result.push_front(it.key(), it.info());
+      result.push_front(it->first, it->second);
     }
-  }
 
-  return result;
+    return result;
+  }
 }
 
 template <typename Key, typename Info>
@@ -236,12 +248,12 @@ template <typename Key, typename Info>
 Ring<Key, Info> join(const Ring<Key, Info>& first, const Ring<Key, Info>& second) {
   Ring<Key, Info> result;
 
-  for (typename Ring<Key, Info>::ConstIterator it = --(first.cend()); it != --(first.cbegin()); it--) {
-    result.push_front(it.key(), it.info());
+  for (auto it = --(first.cend()); it != first.cend(); it.past()) {
+    result.push_front(it->first, it->second);
   }
 
-  for (typename Ring<Key, Info>::ConstIterator it = --(second.cend()); it != --(second.cbegin()); it--) {
-    result.push_front(it.key(), it.info());
+  for (auto it = --(second.cend()); it != second.cend(); it.past()) {
+    result.push_front(it->first, it->second);
   }
 
   return unique(result, _concatenate_info<Key, Info>);
@@ -251,8 +263,8 @@ template <typename Key, typename Info>
 Ring<Key, Info> _reverse(const Ring<Key, Info>& ring) {
   Ring<Key, Info> reversed;
 
-  for (typename Ring<Key, Info>::ConstIterator it = ring.cbegin(); it != ring.cend(); it++) {
-    reversed.push_front(it.key(), it.info());
+  for (typename Ring<Key, Info>::ConstIterator it = ring.cbegin(); it != ring.cend(); it.next()) {
+    reversed.push_front(it->first, it->second);
   }
 
   return reversed;
@@ -265,26 +277,20 @@ Ring<Key, Info> shuffle(
   unsigned int reps) {
   Ring<Key, Info> result;
 
-  typename Ring<Key, Info>::ConstIterator it_first = first.cbegin();
-  typename Ring<Key, Info>::ConstIterator it_second = second.cbegin();
+  auto first_it = first.cbegin();
+  auto second_it = second.cbegin();
 
   for (unsigned int rep = 0; rep < reps; rep++) {
     for (unsigned int i = 0; i < fcnt; i++) {
-      result.push_front(it_first.key(), it_first.info());
+      result.push_front(first_it->first, first_it->second);
 
-      it_first++;
-      if (it_first == first.cend()) {
-        it_first = first.cbegin(); // if _sentinel is reached reset the iterator
-      }
+      first_it++;
     }
 
     for (unsigned int i = 0; i < scnt; i++) {
-      result.push_front(it_second.key(), it_second.info());
+      result.push_front(second_it->first, second_it->second);
 
-      it_second++;
-      if (it_second == second.cend()) {
-        it_second = second.cbegin();
-      }
+      second_it++;
     }
   }
 
