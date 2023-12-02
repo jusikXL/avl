@@ -7,6 +7,8 @@ int main() {
   insert();
   pop();
   erase();
+  clear();
+  find();
 
   return 0;
 }

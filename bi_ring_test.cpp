@@ -169,3 +169,28 @@ void erase() {
   assert((--it_next).key() == ring.begin().key());
 }
 
+void clear() {
+  auto [ring, nodes] = _ring_fixture();
+
+  ring.clear();
+
+  assert(ring.cbegin() == ring.cend());
+  assert((++ring.cbegin()) == ring.cend());
+  assert((--ring.cbegin()) == ring.cend());
+
+  assert(ring.size() == 0);
+}
+
+void find() {
+  auto [ring, nodes] = _ring_fixture();
+
+  // should return iterator to the found node
+  for (unsigned int i = 0; i < nodes.size(); i++) {
+    auto it = ring.find(nodes[i].first);
+    assert(it.key() == nodes[i].first && it.info() == nodes[i].second);
+  }
+
+  // should return iterator to the upper bound if not found (_sentinel in our case)
+  auto it_not_found = ring.find(456789);
+  assert(it_not_found == ring.end());
+}

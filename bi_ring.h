@@ -177,7 +177,7 @@ public:
 
   void clear() {
     while (_size) {
-      _pop(_sentinel->_next);
+      pop_front();
     }
   }
 
