@@ -26,7 +26,7 @@ private:
   Node* _sentinel;
   unsigned int _size;
 
-  bool is_sentinel(Node* node) const { return node == _sentinel; }
+  bool _is_sentinel(Node* node) const { return node == _sentinel; }
 
   Node* _push(Node* before, Node* after, const Key& key, const Info& info) {
     Node* new_node = new Node(key, info, before, after);
@@ -40,7 +40,7 @@ private:
   }
 
   Node* _pop(Node* node) {
-    if (is_sentinel(node))
+    if (_is_sentinel(node))
       return _sentinel;
 
     Node* to_delete = node;
@@ -55,73 +55,69 @@ private:
     return next_node; // returns _sentinel if the last node is deleted
   }
 
-public:
   /////////////////////////////// ITERATORS //////////////////////////////
-  template <typename Derived>
+  template <typename KeyType, typename InfoType>
   class IteratorBase {
-  protected:
+  private:
+    const Ring<Key, Info>* _owner;
     Node* _curr;
     friend class Ring<Key, Info>;
-    IteratorBase(Node* node) : _curr(node) { }
+    IteratorBase(Node* node, const Ring* owner) : _owner(owner), _curr(node) { }
 
   public:
-    Derived& operator++() {
-      _curr = _curr->_next;
-      return static_cast<Derived&>(*this);
+    // jump over sentinel
+    IteratorBase& operator++() {
+      _curr = _owner->_is_sentinel(_curr->_next) ?
+        _curr->_next->_next : _curr->_next;
+
+      return static_cast<IteratorBase&>(*this);
     }
 
-    Derived operator++(int) {
-      Derived temp = static_cast<Derived&>(*this);
+    IteratorBase operator++(int) {
+      IteratorBase temp = static_cast<IteratorBase&>(*this);
       ++(*this);
       return temp;
     }
 
-    Derived& operator--() {
-      _curr = _curr->_past;
-      return static_cast<Derived&>(*this);
+    IteratorBase& operator--() {
+      _curr = _owner->_is_sentinel(_curr->_past) ?
+        _curr->_past->_past : _curr->_past;
+
+      return static_cast<IteratorBase&>(*this);
     }
 
-    Derived operator--(int) {
-      Derived temp = static_cast<Derived&>(*this);
+    IteratorBase operator--(int) {
+      IteratorBase temp = static_cast<IteratorBase&>(*this);
       --(*this);
       return temp;
     }
 
-    bool operator==(const Derived& other) const {
+    bool operator==(const IteratorBase& other) const {
       return _curr == other._curr;
     }
 
-    bool operator!=(const Derived& other) const {
+    bool operator!=(const IteratorBase& other) const {
       return _curr != other._curr;
     }
+
+    KeyType& key() { return this->_curr->key; }
+    InfoType& info() { return this->_curr->info; }
   };
 
-  class Iterator : public IteratorBase<Iterator> {
-  public:
-    using IteratorBase<Iterator>::IteratorBase;
+public:
+  typedef IteratorBase<Key, Info> Iterator;
+  typedef IteratorBase<const Key, const Info> ConstIterator;
 
-    Key& key() { return this->_curr->key; }
-    Info& info() { return this->_curr->info; }
-  };
+  Iterator begin() { return Iterator(_sentinel->_next, this); }
+  ConstIterator cbegin() const { return ConstIterator(_sentinel->_next, this); }
 
-  class ConstIterator : public IteratorBase<ConstIterator> {
-  public:
-    using IteratorBase<ConstIterator>::IteratorBase;
-
-    const Key& key() const { return this->_curr->key; }
-    const Info& info() const { return this->_curr->info; }
-  };
-
-  Iterator begin() { return Iterator(_sentinel->_next); }
-  ConstIterator cbegin() const { return ConstIterator(_sentinel->_next); }
-
-  Iterator end() { return Iterator(_sentinel); }
-  ConstIterator cend() const { return ConstIterator(_sentinel); }
+  Iterator end() { return Iterator(_sentinel, this); }
+  ConstIterator cend() const { return ConstIterator(_sentinel, this); }
   /////////////////////////////// ITERATORS //////////////////////////////
 
 private:
   Iterator _find(const Key& search_key, Iterator from, Iterator to) {
-    for (Iterator it = from; it != to; ++it) {
+    for (Iterator it = from; it != to; it++) {
       if (it.key() == search_key) {
         return it;
       }
@@ -160,19 +156,19 @@ public:
   }
 
   Iterator push_front(const Key& key, const Info& info) {
-    return Iterator(_push(_sentinel, _sentinel->_next, key, info));
+    return Iterator(_push(_sentinel, _sentinel->_next, key, info), this);
   }
 
   Iterator pop_front() {
-    return Iterator(_pop(_sentinel->_next));
+    return Iterator(_pop(_sentinel->_next), this);
   }
 
   Iterator erase(Iterator position) {
-    return Iterator(_pop(position._curr));
+    return Iterator(_pop(position._curr), this);
   }
 
   Iterator insert(Iterator position, const Key& key, const Info& info) {
-    return Iterator(_push(position._curr->_past, position._curr, key, info));
+    return Iterator(_push(position._curr->_past, position._curr, key, info), this);
   }
 
   void clear() {
@@ -184,6 +180,10 @@ public:
   Iterator find(const Key& search_key) {
     return _find(search_key, begin(), end());
   }
+
+  Iterator find(const Key& search_key, Iterator from, Iterator to) {
+    return _find(search_key, from, to);
+  }
 };
 
 template <typename Key, typename Info>
@@ -194,6 +194,7 @@ ostream& operator<<(ostream& os, const Ring<Key, Info>& ring) {
   return os;
 }
 
+//////////////////////////// EXTERNAL //////////////////////////////////
 
 template <typename Key, typename Info>
 Ring<Key, Info> filter(const Ring<Key, Info>& src, bool (*pred)(const Key&)) {
@@ -247,7 +248,7 @@ Ring<Key, Info> join(const Ring<Key, Info>& first, const Ring<Key, Info>& second
 }
 
 template <typename Key, typename Info>
-Ring<Key, Info> reverse(const Ring<Key, Info>& ring) {
+Ring<Key, Info> _reverse(const Ring<Key, Info>& ring) {
   Ring<Key, Info> reversed;
 
   for (typename Ring<Key, Info>::ConstIterator it = ring.cbegin(); it != ring.cend(); it++) {
@@ -256,7 +257,6 @@ Ring<Key, Info> reverse(const Ring<Key, Info>& ring) {
 
   return reversed;
 }
-
 
 template <typename Key, typename Info>
 Ring<Key, Info> shuffle(
@@ -288,7 +288,7 @@ Ring<Key, Info> shuffle(
     }
   }
 
-  return reverse(result);
+  return _reverse(result);
 }
 
 #endif // RING_HPP
