@@ -131,7 +131,7 @@ public:
 
 private:
   Iterator _find(const Key& search_key, Iterator from, Iterator to) {
-    for (Iterator it = from; it != to; it++) {
+    for (Iterator it = from; it != to; it.next()) {
       if (it->first == search_key) {
         return it;
       }
