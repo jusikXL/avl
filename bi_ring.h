@@ -91,6 +91,22 @@ private:
       return temp;
     }
 
+    IteratorBase operator+(unsigned int steps) const {
+      IteratorBase temp = *this;
+      for (unsigned int i = 0; i < steps % _owner->size(); i++) {
+        temp++;
+      }
+      return temp;
+    }
+
+    IteratorBase operator-(unsigned int steps) const {
+      IteratorBase temp = *this;
+      for (unsigned int i = 0; i < steps % _owner->size(); i++) {
+        temp--;
+      }
+      return temp;
+    }
+
     bool operator==(const IteratorBase& other) const {
       return _curr == other._curr;
     }
@@ -130,8 +146,9 @@ public:
   /////////////////////////////// ITERATORS //////////////////////////////
 
 private:
-  Iterator _find(const Key& search_key, Iterator from, Iterator to) {
-    for (Iterator it = from; it != to; it.next()) {
+  template <typename IteratorBase>
+  IteratorBase _find(const Key& search_key, IteratorBase from, IteratorBase to) const {
+    for (IteratorBase it = from; it != to; it.next()) {
       if (it->first == search_key) {
         return it;
       }
@@ -166,20 +183,28 @@ public:
     return _size;
   }
 
-  Iterator push_front(const Key& key, const Info& info) {
-    return Iterator(_push(_sentinel, _sentinel->_next, key, info), this);
-  }
-
-  Iterator pop_front() {
-    return Iterator(_pop(_sentinel->_next), this);
+  Iterator insert(Iterator position, const Key& key, const Info& info) {
+    return Iterator(_push(position._curr->_past, position._curr, key, info), this);
   }
 
   Iterator erase(Iterator position) {
     return Iterator(_pop(position._curr), this);
   }
 
-  Iterator insert(Iterator position, const Key& key, const Info& info) {
-    return Iterator(_push(position._curr->_past, position._curr, key, info), this);
+  Iterator push_front(const Key& key, const Info& info) {
+    return insert(begin(), key, info);
+  }
+
+  Iterator push_back(const Key& key, const Info& info) {
+    return insert(end(), key, info);
+  };
+
+  Iterator pop_front() {
+    return erase(begin());
+  }
+
+  Iterator pop_back() {
+    return erase(end());
   }
 
   void clear() {
@@ -195,6 +220,14 @@ public:
   Iterator find(const Key& search_key, Iterator from, Iterator to) {
     return _find(search_key, from, to);
   }
+
+  ConstIterator cfind(const Key& search_key) const {
+    return _find(search_key, cbegin(), cend());
+  }
+
+  ConstIterator cfind(const Key& search_key, ConstIterator from, ConstIterator to) const {
+    return _find(search_key, from, to);
+  }
 };
 
 template <typename Key, typename Info>
@@ -207,7 +240,6 @@ ostream& operator<<(ostream& os, const Ring<Key, Info>& ring) {
 }
 
 //////////////////////////// EXTERNAL //////////////////////////////////
-
 template <typename Key, typename Info>
 Ring<Key, Info> filter(const Ring<Key, Info>& src, bool (*pred)(const Key&)) {
   Ring<Key, Info> result;
@@ -225,18 +257,29 @@ template <typename Key, typename Info>
 Ring<Key, Info> unique(const Ring<Key, Info>& src, Info(aggregate)(const Key&, const Info&, const Info&)) {
   Ring<Key, Info> result;
 
-  for (auto it = --(src.cend()); it != src.cend(); it.past()) {
-    auto found_it = result.find(it->first);
-
-    if (found_it != result.end()) {
-      // if key's been added to result previously
-      found_it->second = aggregate(it->first, found_it->second, it->second);
-    } else {
-      result.push_front(it->first, it->second);
+  for (auto it = src.cbegin(); it != src.cend(); it.next()) {
+    if (result.cfind(it->first, result.cbegin(), result.cend()) != result.cend()) {
+      // if key inserted before
+      continue;
     }
 
-    return result;
+    auto from = it; from.next();
+    auto to = src.cend();
+
+    auto found = src.cbegin();
+    Info new_info = it->second; // copy the initial source info
+
+    // while key is found aggreate the source info
+    while ((found = src.cfind(it->first, from, to)) != to) {
+      new_info = aggregate(it->first, new_info, found->second);
+      from = found.next();
+    }
+
+    // push node with a key and aggregated info
+    result.push_back(it->first, new_info);
   }
+
+  return result;
 }
 
 template <typename Key, typename Info>
@@ -246,28 +289,13 @@ Info _concatenate_info(const Key&, const Info& i1, const Info& i2) {
 
 template <typename Key, typename Info>
 Ring<Key, Info> join(const Ring<Key, Info>& first, const Ring<Key, Info>& second) {
-  Ring<Key, Info> result;
+  Ring<Key, Info> result = first;
 
-  for (auto it = --(first.cend()); it != first.cend(); it.past()) {
-    result.push_front(it->first, it->second);
-  }
-
-  for (auto it = --(second.cend()); it != second.cend(); it.past()) {
-    result.push_front(it->first, it->second);
+  for (auto it = second.cbegin(); it != second.cend(); it.next()) {
+    result.push_back(it->first, it->second);
   }
 
   return unique(result, _concatenate_info<Key, Info>);
-}
-
-template <typename Key, typename Info>
-Ring<Key, Info> _reverse(const Ring<Key, Info>& ring) {
-  Ring<Key, Info> reversed;
-
-  for (typename Ring<Key, Info>::ConstIterator it = ring.cbegin(); it != ring.cend(); it.next()) {
-    reversed.push_front(it->first, it->second);
-  }
-
-  return reversed;
 }
 
 template <typename Key, typename Info>
@@ -282,19 +310,19 @@ Ring<Key, Info> shuffle(
 
   for (unsigned int rep = 0; rep < reps; rep++) {
     for (unsigned int i = 0; i < fcnt; i++) {
-      result.push_front(first_it->first, first_it->second);
+      result.push_back(first_it->first, first_it->second);
 
       first_it++;
     }
 
     for (unsigned int i = 0; i < scnt; i++) {
-      result.push_front(second_it->first, second_it->second);
+      result.push_back(second_it->first, second_it->second);
 
       second_it++;
     }
   }
 
-  return _reverse(result);
+  return result;
 }
 
 #endif // RING_HPP
