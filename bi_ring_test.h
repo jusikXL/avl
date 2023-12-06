@@ -1,0 +1,11 @@
+void constructor();
+void push();
+void insert();
+void pop();
+void erase();
+void clear();
+void find();
+void filter();
+void unique();
+void join();
+void shuffle();

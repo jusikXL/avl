@@ -1,4 +1,5 @@
 #include "bi_ring.h"
+#include "bi_ring_test.h"
 
 #include <string>
 #include <cassert>

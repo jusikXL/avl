@@ -1,4 +1,4 @@
-#include "bi_ring_test.cpp"
+#include "bi_ring_test.h"
 
 int main() {
 
