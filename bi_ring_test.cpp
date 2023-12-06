@@ -292,3 +292,57 @@ void shuffle() {
     it.next();
   }
 }
+
+void split() {
+  Ring<int, int> ring;
+
+  ring.push_back(2, 2);
+  ring.push_back(3, 3);
+  ring.push_back(1, 1);
+  ring.push_back(5, 5);
+  ring.push_back(7, 7);
+  ring.push_back(6, 6);
+  ring.push_back(9, 9);
+
+  for (int i = 1; i <= 7; i++) {
+    ring.push_back(i, i);
+  }
+
+  for (int i = 7; i != 0; i--) {
+    ring.push_back(i, i);
+  }
+
+  cout << "Initial ring: " << endl << ring << endl;
+
+  auto result = split(ring);
+
+  cout << "Splitted rings: " << endl;
+  for (int i = 0; i < result.size(); i++) {
+    cout << result[i] << endl;
+  }
+}
+
+
+int main() {
+  constructor();
+
+  push();
+  insert();
+
+  pop();
+  erase();
+  clear();
+
+  find();
+
+  filter();
+  unique();
+  join();
+  shuffle();
+
+  split();
+
+  cout << "Passed" << endl;
+
+  return 0;
+}

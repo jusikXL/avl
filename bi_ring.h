@@ -2,6 +2,7 @@
 #define RING_HPP
 
 #include <iostream>
+#include <vector>
 using namespace std;
 
 template <typename Key, typename Info>
@@ -320,6 +321,30 @@ Ring<Key, Info> shuffle(
 
       second_it++;
     }
+  }
+
+  return result;
+}
+
+template <typename Key, typename Info>
+vector<Ring<Key, Info>> split(const Ring<Key, Info>& src) {
+
+  vector<Ring<Key, Info>> result;
+
+  auto it = src.cbegin();
+  while (it != src.cend()) {
+    Ring<Key, Info> ring;
+
+    while (it->second >= (--ring.cend())->second) {
+      // compare current it with the last node pushed to the ring
+
+      // note that ring resets every time we encounter node with info < last inserted info
+      // and we start pushing in the newly created ring again
+      ring.push_back(it->first, it->second);
+      it.next();
+    }
+
+    result.push_back(ring);
   }
 
   return result;
