@@ -167,6 +167,18 @@ private:
     }
   }
 
+  Node* _search_with_error(Node* node, const Key& search_key) const {
+    node = _search(node, search_key);
+
+    if (!node) {
+      ostringstream fmt;
+      fmt << "Key not found: " << search_key;
+      throw out_of_range(fmt.str());
+    }
+
+    return node;
+  }
+
 
 public:
   AVLTree() { }
@@ -212,6 +224,8 @@ public:
     Node* found = _search(_root, key);
     return found ? found->data.second : Info();
   };
+  Info& at(const Key& key) { return _search_with_error(_root, key)->info; }
+  const Info& at(const Key& key) const { return _search_with_error(_root, key)->info; }
 };
 
 
