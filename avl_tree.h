@@ -6,17 +6,10 @@
 using namespace std;
 
 /////////////////////////////// HELPERS //////////////////////////////
-
 enum Comparison {
   Less = -1,
   Equal = 0,
   Greater = 1,
-};
-
-enum Balance {
-  LeftHeavy = -1,
-  Neutral = 0,
-  RightHeavy = 1
 };
 
 enum Rotate {
@@ -34,9 +27,7 @@ int compare(const Key& key1, const Key& key2) {
     return 0;
   }
 }
-
 /////////////////////////////// HELPERS //////////////////////////////
-
 
 template <typename Key, typename Info>
 class AVLTree {
@@ -47,6 +38,10 @@ private:
     pair<Key, Info> data;
     Node(const Key& k, const Info& i, Node* l = nullptr, Node* r = nullptr, unsigned int h = 1, int b = 0)
       : data(k, i), _left(l), _right(r), _height(h), _balance(b) { }
+    ~Node() {
+      delete _left;
+      delete _right;
+    }
 
   private:
     Node* _left;
@@ -63,8 +58,74 @@ private:
   };
   /////////////////////////////// NODE //////////////////////////////
 
-  Node* _root = nullptr;
-  size_t _size = 0;
+  Node* _root;
+  size_t _size;
+
+public:
+  AVLTree() : _root(nullptr), _size(0) { }
+  AVLTree(const AVLTree& src) { *this = src; }
+  AVLTree& operator=(const AVLTree& src) {
+    if (this != &src) {
+      clear();
+      _copy(_root, src._root);
+    }
+
+    return *this;
+  }
+  ~AVLTree() { clear(); }
+
+  size_t size() const { return _size; }
+
+  void clear() {
+    delete _root;
+
+    _root = nullptr;
+    _size = 0;
+  }
+
+  void print(ostream& out = cout) const { _print(out, _root, 0); }
+
+  void insert(const Key& key, const Info& info) {
+    _insert(_root, key, info);
+  }
+
+  Info& remove(const Key& key) {
+    return _remove(_root, key);
+  }
+
+  Info& operator[](const Key& key) { return _search(_root, key)->data.second; }
+  const Info& operator[](const Key& key) const { return _search(_root, key)->data.second; };
+  bool find(const Key& key) const { return _safe_search(_root, key) != nullptr; }
+
+  bool balanced() {
+    return _balanced(_root);
+  }
+
+private:
+  void _copy(Node*& my_node, const Node* src_node) {
+    if (!src_node)
+      return;
+
+    my_node = new Node(src_node->data.first, src_node->data.second);
+    _size++;
+
+    _copy(my_node->_left, src_node->_left);
+    _copy(my_node->_right, src_node->_right);
+  }
+
+  bool _balanced(Node* node) {
+    if (!node) {
+      return true;
+    }
+
+    int balance = node->_balance;
+
+    if (balance < -1 || balance > 1) {
+      return false;
+    }
+
+    return _balanced(node->_left) && _balanced(node->_right);
+  }
 
   void _print(ostream& os, Node* node, int indent) const {
     if (!!node) {
@@ -124,51 +185,45 @@ private:
     }
   }
 
-  Node* _insert_or_search(Node*& node, const Key& key, const Info& info) {
-    Node* found = nullptr;
-
+  void _insert(Node*& node, const Key& key, const Info& info) {
     if (!node) {
       _size++;
       node = new Node(key, info);
-
-      found = node;
     }
 
     switch (compare(key, node->data.first)) {
     case Less:
-      _insert_or_search(node->_left, key, info);
+      _insert(node->_left, key, info);
       break;
     case Greater:
-      _insert_or_search(node->_right, key, info);
+      _insert(node->_right, key, info);
       break;
     case Equal:
-      found = node;
+      // TODO: think what to do
       break;
     }
 
     node->_update_height();
     _balance(node);
-
-    return found;
   }
 
-  Node* _search(Node* node, const Key& search_key) const {
+  Node* _safe_search(Node* node, const Key& search_key) const {
     if (!node) {
       return nullptr;
     }
 
     switch (compare(search_key, node->data.first)) {
     case Less:
-      return _search(search_key, node->_left);
+      return _safe_search(node->_left, search_key);
     case Greater:
-      return _search(search_key, node->_right);
-    case Equal:
+      return _safe_search(node->_right, search_key);
+    default:
       return node;
     }
   }
 
-  Node* _search_with_error(Node* node, const Key& search_key) const {
-    node = _search(node, search_key);
+  Node* _search(Node* node, const Key& search_key) const {
+    node = _safe_search(node, search_key);
 
     if (!node) {
       ostringstream fmt;
@@ -179,53 +234,49 @@ private:
     return node;
   }
 
+  Node* _find_min(Node* node) const { return node->_left ? _find_min(node->_left) : node; }
 
-public:
-  AVLTree() { }
-  AVLTree(const AVLTree& src) { *this = src; }
-  AVLTree& operator=(const AVLTree& src) {
-    if (this != &src) {
-      clear();
-      copy(_root, src._root);
+  Info& _remove(Node*& node, const Key& key) {
+    Info& deleted_info = Info();
+
+    if (!node) {
+      return deleted_info;
     }
 
-    return *this;
+    switch (compare(key, node->data.first)) {
+    case Less:
+      deleted_info = _remove(node->_left, key);
+      break;
+    case Greater:
+      deleted_info = _remove(node->_right, key);
+      break;
+    case Equal:
+      deleted_info = node->data.second;
+
+      if (node->_left && node->_right) {
+        Node* successor = _find_min(node->_right);
+        node->data = successor->data;
+        _remove(node->_right, successor->data.first);
+      } else {
+        Node* temp = node->_left ? node->_left : node->_right;
+        if (!temp) {
+          temp = node;
+          node = nullptr;
+        } else {
+          *node = *temp;
+        }
+        delete temp;
+      }
+      break;
+    }
+
+    if (node) {
+      node->_update_height();
+      _balance(node);
+    }
+
+    return deleted_info;
   }
-  ~AVLTree() { clear(); }
-
-  size_t size() const { return _size; }
-
-  void copy(Node*& my_node, const Node* src_node) {
-    if (!src_node)
-      return;
-
-    my_node = new Node(src_node->data.first, src_node->data.second);
-    _size++;
-
-    copy(my_node->left, src_node->left);
-    copy(my_node->right, src_node->right);
-  }
-
-  void clear() {
-    delete _root;
-
-    _root = nullptr;
-    _size = 0;
-  }
-
-  void print(ostream& out = cout) const { _print(out, _root, 0); }
-
-  void insert(const Key& key, const Info& info) {
-    _insert_or_search(_root, key, info);
-  }
-
-  Info& operator[](const Key& key) { return _insert_or_search(_root, key, Info())->data.second; }
-  const Info& operator[](const Key& key) const {
-    Node* found = _search(_root, key);
-    return found ? found->data.second : Info();
-  };
-  Info& at(const Key& key) { return _search_with_error(_root, key)->info; }
-  const Info& at(const Key& key) const { return _search_with_error(_root, key)->info; }
 };
 
 
