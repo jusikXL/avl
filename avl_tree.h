@@ -89,8 +89,13 @@ public:
     _insert(_root, key, info);
   }
 
-  Info& remove(const Key& key) {
-    return _remove(_root, key);
+  bool remove(const Key& key) {
+    if (_remove(_root, key)) {
+      _size--;
+      return true;
+    }
+
+    return false;
   }
 
   Info& operator[](const Key& key) { return _search(_root, key)->data.second; }
@@ -236,22 +241,21 @@ private:
 
   Node* _find_min(Node* node) const { return node->_left ? _find_min(node->_left) : node; }
 
-  Info& _remove(Node*& node, const Key& key) {
-    Info& deleted_info = Info();
-
+  bool _remove(Node*& node, const Key& key) {
     if (!node) {
-      return deleted_info;
+      return false;
     }
+    bool deleted = false;
 
     switch (compare(key, node->data.first)) {
     case Less:
-      deleted_info = _remove(node->_left, key);
+      deleted = _remove(node->_left, key);
       break;
     case Greater:
-      deleted_info = _remove(node->_right, key);
+      deleted = _remove(node->_right, key);
       break;
     case Equal:
-      deleted_info = node->data.second;
+      deleted = true;
 
       if (node->_left && node->_right) {
         Node* successor = _find_min(node->_right);
@@ -267,6 +271,7 @@ private:
         }
         delete temp;
       }
+
       break;
     }
 
@@ -275,7 +280,7 @@ private:
       _balance(node);
     }
 
-    return deleted_info;
+    return deleted;
   }
 };
 

@@ -5,7 +5,8 @@
 
 using namespace std;
 
-void _insert_fixture(AVLTree<int, string>& tree, const vector<pair<int, string>>& nodes) {
+template <typename Key, typename Info>
+void _insert_fixture(AVLTree<Key, Info>& tree, const vector<pair<Key, Info>>& nodes) {
   for (const auto& pair : nodes) {
     tree.insert(pair.first, pair.second);
   }
@@ -113,58 +114,62 @@ void clear() {
 void remove() {
   AVLTree<int, string> tree;
   vector<pair<int, string>> nodes = {
-   {5, "E node"},
-   {3, "C node"},
-   {7, "G node"},
-   {2, "B node"},
-   {4, "D node"},
-   {6, "F node"},
-   {8, "H node"},
+    {10, "A"},
+    {5, "B"},
+    {15, "C"},
+    {2, "D"},
+    {8, "E"},
+    {12, "F"},
+    {18, "G"},
   };
   _insert_fixture(tree, nodes);
 
-  // remove a leaf node
-  string removed_info = tree.remove(8);
-  assert(removed_info == "H node");
-  assert(tree.size() == 7);
+  // leaf
+  assert(tree.remove(2));
+  assert(!tree.find(2));
   assert(tree.balanced());
-
-  // Remove a node with one child
-  removed_info = tree.remove(2);
-  assert(removed_info == "B node");
   assert(tree.size() == 6);
-  assert(tree.balanced());
 
-  // Remove a node with two children
-  removed_info = tree.remove(5);
-  assert(removed_info == "E node");
+  // one child
+  assert(tree.remove(5));
+  assert(!tree.find(5));
+  assert(tree.balanced());
   assert(tree.size() == 5);
+
+  // two children
+  assert(tree.remove(15));
+  assert(!tree.find(15));
   assert(tree.balanced());
+  assert(tree.size() == 4);
 
-  // Remove non-existing node
-  removed_info = tree.remove(10);
-  assert(removed_info == ""); // The key doesn't exist
-  assert(tree.size() == 5);
+  // non - existing node
+  assert(!tree.remove(100));
   assert(tree.balanced());
+  assert(tree.size() == 4);
 
-  // Test removing all nodes
-  tree.remove(3);
-  tree.remove(4);
-  tree.remove(6);
-  tree.remove(7);
-
-  assert(tree.size() == 1);
+  // root node
+  assert(tree.remove(10));
+  assert(!tree.find(10));
   assert(tree.balanced());
-
-  // Remove the last node
-  removed_info = tree.remove(8);
-  assert(removed_info == ""); // No such key
-  assert(tree.size() == 0);
-  assert(tree.balanced());
-
-  // Additional assertions if needed
+  assert(tree.size() == 3);
 }
 
+
+void find_and_at() {
+  AVLTree<int, string> tree;
+  vector<pair<int, string>> nodes = {
+    {10, "A"},
+    {5, "B"},
+    {15, "C"},
+  };
+  _insert_fixture(tree, nodes);
+
+  for (const auto& pair : nodes) {
+    assert(tree.find(pair.first));
+    assert(tree[pair.first] == pair.second);
+  }
+  assert(tree.find(11) == false);
+}
 
 
 int main() {
@@ -174,6 +179,10 @@ int main() {
 
   clear();
 
-  cout << "All tests passed successfully." << endl;
+  remove();
+
+  find_and_at();
+
+  std::cout << "All tests passed successfully." << endl;
   return 0;
 }
