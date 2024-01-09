@@ -1,4 +1,5 @@
 #include "avl_tree.h"
+#include "avl_tree_test.h"
 #include <cassert>
 #include <vector>
 #include <utility>
