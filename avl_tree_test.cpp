@@ -172,6 +172,159 @@ void find_and_at() {
   assert(tree.find(11) == false);
 }
 
+void for_each() {
+  AVLTree<int, int> tree;
+  vector<pair<int, int>> nodes = {
+    {5, 10},
+    {3, 20},
+    {7, 30},
+    {2, 40},
+    {4, 50},
+    {6, 60},
+    {8, 70},
+  };
+  _insert_fixture(tree, nodes);
+
+  tree.for_each([ ](const int& key, int& info) { info++; });
+
+  assert(tree[5] == 11);
+  assert(tree[3] == 21);
+  assert(tree[7] == 31);
+  assert(tree[2] == 41);
+  assert(tree[4] == 51);
+  assert(tree[6] == 61);
+  assert(tree[8] == 71);
+}
+
+void get_largest() {
+  AVLTree<int, string> tree;
+  vector<pair<int, string>> nodes = {
+    {10, "A"},
+    {5, "B"},
+    {15, "C"},
+    {2, "D"},
+    {8, "E"},
+    {12, "F"},
+    {18, "G"},
+  };
+  _insert_fixture(tree, nodes);
+
+  int n = 3;
+  vector<pair<int, string>> largestElements = tree.get_largest(n);
+  vector<pair<int, string>> expectedElements = {
+    {18, "G"},
+    {15, "C"},
+    {12, "F"}
+  };
+  assert(largestElements == expectedElements);
+
+  largestElements = tree.get_largest(0);
+  expectedElements = {};
+  assert(largestElements == expectedElements);
+
+  largestElements = tree.get_largest(10); // more than in array
+  expectedElements = {
+    {18, "G"},
+    {15, "C"},
+    {12, "F"},
+    {10, "A"},
+    {8, "E"},
+    {5, "B"},
+    {2, "D"}
+  };
+  assert(largestElements == expectedElements);
+}
+
+void get_smallest() {
+  AVLTree<int, string> tree;
+  vector<pair<int, string>> nodes = {
+    {10, "A"},
+    {5, "B"},
+    {15, "C"},
+    {2, "D"},
+    {8, "E"},
+    {12, "F"},
+    {18, "G"},
+  };
+  _insert_fixture(tree, nodes);
+
+  int n = 3;
+  vector<pair<int, string>> smallestElements = tree.get_smallest(n);
+  vector<pair<int, string>> expectedElements = {
+      {2, "D"},
+      {5, "B"},
+      {8, "E"}
+  };
+
+  assert(smallestElements == expectedElements);
+
+  smallestElements = tree.get_smallest(0);
+  expectedElements = {};
+  assert(smallestElements == expectedElements);
+
+  smallestElements = tree.get_smallest(10); // more than in the array
+  expectedElements = {
+      {2, "D"},
+      {5, "B"},
+      {8, "E"},
+      {10, "A"},
+      {12, "F"},
+      {15, "C"},
+      {18, "G"}
+  };
+
+  assert(smallestElements == expectedElements);
+}
+
+void max_info_selector() {
+  AVLTree<int, string> tree;
+  vector<pair<int, string>> nodes = {
+    {10, "A"},
+    {5, "B"},
+    {15, "C"},
+    {2, "D"},
+    {8, "E"},
+    {12, "F"},
+    {18, "G"},
+  };
+  _insert_fixture(tree, nodes);
+
+  int n = 3;
+  vector<pair<int, string>> selectedElements = maxinfo_selector(tree, n);
+
+  vector<pair<int, string>> expectedElements = {
+      {18, "G"},
+      {12, "F"},
+      {8, "E"}
+  };
+  assert(selectedElements == expectedElements);
+
+  // Test when n is greater than the number of elements in the tree
+  selectedElements = maxinfo_selector(tree, 10);
+  expectedElements = {
+      {18, "G"},
+      {12, "F"},
+      {8, "E"},
+      {2, "D"},
+      {15, "C"},
+      {5, "B"},
+      {10, "A"}};
+  assert(selectedElements == expectedElements);
+
+  // Test when n is 0
+  selectedElements = maxinfo_selector(tree, 0);
+  expectedElements = {};
+  assert(selectedElements == expectedElements);
+
+  // Test when info can be the same, keys should sum
+  tree[2] = "F";
+  selectedElements = maxinfo_selector(tree, n);
+  expectedElements = {
+      {18, "G"},
+      {14, "F"},
+      {8, "E"}};
+}
+
 
 int main() {
   constructors();
@@ -184,6 +337,13 @@ int main() {
 
   find_and_at();
 
-  std::cout << "All tests passed successfully." << endl;
+  for_each();
+
+  get_largest();
+  get_smallest();
+
+  max_info_selector();
+
+  cout << "All tests passed successfully." << endl;
   return 0;
 }

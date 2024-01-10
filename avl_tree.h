@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <iomanip>
+#include <vector>
+#include <functional>
 using namespace std;
 
 /////////////////////////////// HELPERS //////////////////////////////
@@ -36,8 +38,8 @@ private:
   class Node {
   public:
     pair<Key, Info> data;
-    Node(const Key& k, const Info& i, Node* l = nullptr, Node* r = nullptr, unsigned int h = 1, int b = 0)
-      : data(k, i), _left(l), _right(r), _height(h), _balance(b) { }
+    Node(const Key& k, const Info& i, Node* l = nullptr, Node* r = nullptr)
+      : data(k, i), _left(l), _right(r) { }
     ~Node() {
       delete _left;
       delete _right;
@@ -46,8 +48,8 @@ private:
   private:
     Node* _left;
     Node* _right;
-    unsigned int _height;
-    int _balance;
+    unsigned int _height = 1;
+    int _balance = 0;
 
     void _update_height() {
       _height = 1 + max(_left ? _left->_height : 0, _right ? _right->_height : 0);
@@ -58,11 +60,11 @@ private:
   };
   /////////////////////////////// NODE //////////////////////////////
 
-  Node* _root;
-  size_t _size;
+  Node* _root = nullptr;
+  size_t _size = 0;
 
 public:
-  AVLTree() : _root(nullptr), _size(0) { }
+  AVLTree() { }
   AVLTree(const AVLTree& src) { *this = src; }
   AVLTree& operator=(const AVLTree& src) {
     if (this != &src) {
@@ -85,8 +87,10 @@ public:
 
   void print(ostream& out = cout) const { _print(out, _root, 0); }
 
-  void insert(const Key& key, const Info& info) {
-    _insert(_root, key, info);
+  void insert(const Key& key, const Info& info,
+    function<Info(const Info& oldInfo, const Info& newInfo)> on_same_key =
+    [ ](const Info& oldInfo, const Info& newInfo) { return newInfo; }) {
+    _insert(_root, key, info, on_same_key);
   }
 
   bool remove(const Key& key) {
@@ -106,7 +110,55 @@ public:
     return _balanced(_root);
   }
 
+  template <typename Fn> void for_each(Fn fn) { _for_each(_root, fn); }
+  vector<pair<Key, Info>> get_largest(int n) {
+    vector<pair<Key, Info>> result;
+    _get_largest(_root, n, result);
+    return result;
+  }
+  vector<pair<Key, Info>> get_smallest(int n) {
+    vector<pair<Key, Info>> result;
+    _get_smallest(_root, n, result);
+    return result;
+  }
 private:
+  void _get_largest(Node* node, int& n, vector<pair<Key, Info>>& result) {
+    if (node == nullptr || n == 0) {
+      return;
+    }
+
+    _get_largest(node->_right, n, result);
+    if (n > 0) {
+      result.push_back(pair<Key, Info>(node->data.first, node->data.second));
+      n--;
+    }
+    if (n > 0) {
+      _get_largest(node->_left, n, result);
+    }
+  }
+
+  void _get_smallest(Node* node, int& n, vector<pair<Key, Info>>& result) {
+    if (node == nullptr || n == 0) {
+      return;
+    }
+
+    _get_smallest(node->_left, n, result);
+    if (n > 0) {
+      result.push_back(pair<Key, Info>(node->data.first, node->data.second));
+      n--;
+    }
+    if (n > 0) {
+      _get_smallest(node->_right, n, result);
+    }
+  }
+
+  template <typename Fn> void _for_each(Node* node, Fn fn) {
+    if (node == nullptr) return;
+    _for_each(node->_left, fn);
+    fn(node->data.first, node->data.second);
+    _for_each(node->_right, fn);
+  }
+
   void _copy(Node*& my_node, const Node* src_node) {
     if (!src_node)
       return;
@@ -190,22 +242,23 @@ private:
     }
   }
 
-  void _insert(Node*& node, const Key& key, const Info& info) {
+  void _insert(Node*& node, const Key& key, const Info& info,
+    function<Info(const Info& oldInfo, const Info& newInfo)> on_same_key) {
     if (!node) {
       _size++;
       node = new Node(key, info);
-    }
-
-    switch (compare(key, node->data.first)) {
-    case Less:
-      _insert(node->_left, key, info);
-      break;
-    case Greater:
-      _insert(node->_right, key, info);
-      break;
-    case Equal:
-      // TODO: think what to do
-      break;
+    } else {
+      switch (compare(key, node->data.first)) {
+      case Less:
+        _insert(node->_left, key, info, on_same_key);
+        break;
+      case Greater:
+        _insert(node->_right, key, info, on_same_key);
+        break;
+      case Equal:
+        node->data.second = on_same_key(node->data.second, info);
+        break;
+      }
     }
 
     node->_update_height();
@@ -286,8 +339,24 @@ private:
 
 
 //////////////////////////// EXTERNAL //////////////////////////////////
+template <typename Key, typename Info>
+vector<pair<Key, Info>> maxinfo_selector(const AVLTree<Key, Info>& tree, unsigned cnt) {
+  AVLTree<Info, Key> inverted;
+  AVLTree<Key, Info> copy = tree;
 
+  copy.for_each([&inverted](const int& key, const string& info) {
+    inverted.insert(info, key, [&](const Key& oldKey, const Key& newKey) { return oldKey + newKey; });
+    });
 
+  vector<pair<Info, Key>> largest_inverted = inverted.get_largest(cnt);
+
+  vector<pair<Key, Info>> largest;
+  for (auto& pair : largest_inverted) {
+    largest.push_back(make_pair(pair.second, pair.first));
+  }
+
+  return largest;
+}
 
 
 #endif // AVL_TREE_HPP
